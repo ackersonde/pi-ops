@@ -1,11 +1,11 @@
 version: 2.1
 
 orbs:
-  ipsec: names/ipsec@dev:second
+  ipsec: names/ipsec@0.0.1
 
 jobs:
   deploy:
-    executor: docker-ubuntu
+    executor: ipsec/docker-ubuntu
     working_directory: /go/src/github.com/danackerson/pi-traefik
     steps:
       - checkout
@@ -31,12 +31,12 @@ jobs:
             # https://circleci.com/docs/api/#trigger-a-new-build-by-project-preview
             #curl -X POST \
             #  https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/ackerson.de-go/build?circle-token=${CTX_CIRCLECI_API_TOKEN}
-      - ipsec/remote-deploy:
-          name: deploy-trafik
-          deploy-fingerprint: $CTX_SSH_DEPLOY_FINGERPRINT
+
 
 workflows:
   deploy-propagate:
     jobs:
-      - deploy:
-          context: org-global
+      - deploy
+      - ipsec/remote-deploy:
+          name: deploy-trafik
+          deploy-fingerprint: $CTX_SSH_DEPLOY_FINGERPRINT
