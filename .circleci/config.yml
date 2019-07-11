@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ipsec: names/ipsec@0.0.7
+  ipsec: names/ipsec@0.0.8
 
 commands:
   prepare_deploy_script:
