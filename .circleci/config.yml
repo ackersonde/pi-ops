@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ipsec: names/ipsec@0.0.6
+  ipsec: names/ipsec@0.0.7
 
 commands:
   prepare_deploy_script:
@@ -36,6 +36,7 @@ workflows:
   deploy-propagate:
     jobs:
       - ipsec/remote-deploy:
+          context: org-global
           name: deploy-trafik
           deploy-fingerprint: $CTX_SSH_DEPLOY_FINGERPRINT
           pre-steps:
