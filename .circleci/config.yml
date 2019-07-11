@@ -35,6 +35,9 @@ commands:
             # https://circleci.com/docs/api/#trigger-a-new-build-by-project-preview
             #curl -X POST \
             #  https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/ackerson.de-go/build?circle-token=${CTX_CIRCLECI_API_TOKEN}
+      - add_ssh_keys:
+          fingerprints:
+            - $CTX_SSH_DEPLOY_FINGERPRINT
 
 workflows:
   deploy-propagate:
