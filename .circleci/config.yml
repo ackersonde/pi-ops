@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ipsec: names/ipsec@0.1.3
+  ipsec: names/ipsec@0.1.4
 
 commands:
   prepare_deploy_script:
@@ -13,14 +13,18 @@ commands:
             cat \<<EOF >deploy_script.sh
             #!/bin/bash
             ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "\
-              mkdir traefik || true && \
-              touch traefik/acme.json && \
-              chmod 600 traefik/acme.json"
+            mkdir traefik || true && \
+            touch traefik/acme.json && \
+            chmod 600 traefik/acme.json"
+
             scp traefik.toml $SSH_USER@$SSH_HOST:~/traefik/traefik.toml
+
             ssh $SSH_USER@$SSH_HOST "\
-              docker network create web || true && \
-              docker rm -f traefik || true"
+            docker network create web || true && \
+            docker rm -f traefik || true"
+
             #TODO: start docker with all bells and whistles
+
             EOF
 
             chmod u+x deploy_script.sh
@@ -38,7 +42,6 @@ workflows:
       - ipsec/remote-deploy:
           context: org-global
           name: deploy-trafik
-          deploy-fingerprint: $CTX_SSH_DEPLOY_FINGERPRINT
           pre-steps:
             - prepare_deploy_script
 
