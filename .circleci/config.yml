@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ipsec: danackerson/ipsec@dev:4
+  ipsec: danackerson/ipsec@dev:5
 
 commands:
   prepare_deploy_script:
@@ -11,7 +11,6 @@ commands:
           name: Prepare deploy script for Traefik Proxy server
           command: |
             cat \<<EOF >deploy_script.sh
-            #!/bin/bash
             ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "\
             mkdir traefik || true && \
             touch traefik/acme.json && \
