@@ -1,26 +1,26 @@
 version: 2.1
 
 orbs:
-  ipsec: names/ipsec@0.0.2
+  ipsec: names/ipsec@0.0.3
 
-jobs:
-  deploy:
-    executor: ipsec/docker-ubuntu
-    working_directory: /go/src/github.com/danackerson/pi-traefik
+commands:
+  prepare_deploy_script:
     steps:
       - checkout
       - run:
-          name: Deploy homepage & Traefik Proxy server
+          name: Prepare deploy script for Traefik Proxy server
           command: |
             cat \<<EOF >deploy_script.sh
             #!/bin/bash
-            ssh -o StrictHostKeyChecking=no \
-              "mkdir traefik || true && \
-              touch $TRAEFIK_DIR/acme.json && \
-              chmod 600 $TRAEFIK_DIR/acme.json"
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "\
+              mkdir traefik || true && \
+              touch traefik/acme.json && \
+              chmod 600 traefik/acme.json"
             scp traefik.toml $SSH_USER@$SSH_HOST:~/traefik/traefik.toml
-            ssh $SSH_USER@$SSH_HOST "docker network create web || true && \
+            ssh $SSH_USER@$SSH_HOST "\
+              docker network create web || true && \
               docker rm -f traefik || true"
+            #TODO: start docker with all bells and whistles
             EOF
 
             chmod u+x deploy_script.sh
@@ -32,11 +32,12 @@ jobs:
             #curl -X POST \
             #  https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/ackerson.de-go/build?circle-token=${CTX_CIRCLECI_API_TOKEN}
 
-
 workflows:
   deploy-propagate:
     jobs:
-      - deploy
       - ipsec/remote-deploy:
           name: deploy-trafik
           deploy-fingerprint: $CTX_SSH_DEPLOY_FINGERPRINT
+          pre-steps:
+            - prepare_deploy_script
+
