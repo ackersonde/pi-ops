@@ -29,7 +29,7 @@ commands:
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               -p 80:80 -p 443:443 \
-              --name traefik traefik:1.7"
+              --name traefik arm32v6/traefik:1.7"
             EOF
 
             chmod u+x deploy_script.sh
