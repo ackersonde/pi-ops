@@ -1,8 +1,7 @@
 version: 2.1
 
 orbs:
-#  ipsec: danackerson/ipsec@0.2.0
-  ipsec: danackerson/ipsec@dev:11
+  ipsec: danackerson/ipsec@0.2.1
 
 commands:
   prepare_deploy_script:
