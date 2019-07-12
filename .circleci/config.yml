@@ -26,7 +26,7 @@ commands:
               -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v ~/traefik/traefik.toml:/traefik.toml \
-              -v ~/traefik/logs:/tmp \
+              -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               -p 80:80 -p 443:443 \
               --name traefik traefik:1.7"
