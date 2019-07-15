@@ -50,12 +50,8 @@ defaultEntryPoints = ["http", "https"]
           extractorfunc = "client.ip"
           [frontends.monitor.ratelimit.rateset.rateset1]
             period = "10s"
-            average = 50
-            burst = 100
-          [frontends.monitor.ratelimit.rateset.rateset2]
-            period = "3s"
-            average = 3
-            burst = 5
+            average = 100
+            burst = 200
 
 #[acme]
 #email = "dan@ackerson.de"
