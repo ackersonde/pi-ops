@@ -45,7 +45,17 @@ defaultEntryPoints = ["http", "https"]
       basicAuth = ["admin:$apr1$Sy/ApXHY$fVtWyeyllJ5KvbENX1mgd/"]
       backend = "api"
         [frontends.monitor.routes.monitor]
-        rule = "Host:monitor.ackerson.de"
+          rule = "Host:monitor.ackerson.de"
+        [frontends.monitor.ratelimit]
+          extractorfunc = "client.ip"
+          [frontends.monitor.ratelimit.rateset.rateset1]
+            period = "10s"
+            average = 50
+            burst = 100
+          [frontends.monitor.ratelimit.rateset.rateset2]
+            period = "3s"
+            average = 3
+            burst = 5
 
 #[acme]
 #email = "dan@ackerson.de"
