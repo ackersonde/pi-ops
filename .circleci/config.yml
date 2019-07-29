@@ -17,6 +17,7 @@ commands:
             chmod 600 traefik/acme.json"
 
             scp traefik.toml $SSH_USER@$SSH_HOST:~/traefik/traefik.toml
+            scp update_domain_records.sh $SSH_USER@$SSH_HOST:~/
 
             ssh $SSH_USER@$SSH_HOST "\
             docker network create web || true && \
