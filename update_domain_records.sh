@@ -16,9 +16,11 @@ if [ ! -f "/usr/bin/jq" ]; then
     exit
 fi
 
+CURRENT_TIMESTAMP="$(date +%F) $(date +%T) -"
+
 ## This cronjob updates the public internet (IPv4 & IPv6) addresses of this device at 5mins past ever hour.
 # m h  dom mon dow   command
-# 55 05 * * * /bin/bash /home/pi/update_domain_records.sh >/var/log/update_domain_records.out 2>&1
+# 55 05 * * * /bin/bash /home/pi/update_domain_records.sh >> /var/log/update_domain_records.log 2>&1
 
 # IPv6
 ipv6_current=`curl --silent https://ipv6.icanhazip.com/ | xargs echo -n`
@@ -26,7 +28,7 @@ ipv6_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authoriza
 "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID" | jq -r '.[] | .data'`
 
 if [ "$ipv6_current" != "$ipv6_dns" ]; then
-    echo -e "IPv6 updates from $ipv6_dns TO $ipv6_current\n"
+    echo -e "$CURRENT_TIMESTAMP IPv6 updates from $ipv6_dns TO $ipv6_current\n"
     curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
     -d "{\"data\":\"$ipv6_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID"
 fi
@@ -36,7 +38,7 @@ ipv4_current=`curl --silent https://ipv4.icanhazip.com/ | xargs echo -n`
 ipv4_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
 "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID" | jq -r '.[] | .data'`
 if [ "$ipv4_current" != "$ipv4_dns" ]; then
-    echo -e "IPv4 updates from $ipv4_dns TO $ipv4_current\n"
+    echo -e "$CURRENT_TIMESTAMP IPv4 updates from $ipv4_dns TO $ipv4_current\n"
     curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
     -d "{\"data\":\"$ipv4_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID"
 fi
