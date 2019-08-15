@@ -18,9 +18,9 @@ fi
 
 CURRENT_TIMESTAMP="$(date +%F) $(date +%T) -"
 
-## This cronjob updates the public internet (IPv4 & IPv6) addresses of this device at 5mins past ever hour.
+## This cronjob updates the public internet (IPv4 & IPv6) addresses of this device every 5mins
 # m h  dom mon dow   command
-# 55 05 * * * /bin/bash /home/pi/update_domain_records.sh >> /var/log/update_domain_records.log 2>&1
+# */5 * * * * /bin/bash /home/pi/update_domain_records.sh >> /var/log/update_domain_records.log 2>&1
 
 # IPv6
 ipv6_current=`curl --silent https://ipv6.icanhazip.com/ | xargs echo -n`
