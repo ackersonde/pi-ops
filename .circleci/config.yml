@@ -22,6 +22,7 @@ commands:
             ssh $SSH_USER@$SSH_HOST "\
             docker network create web || true && \
             docker rm -f traefik || true && \
+            docker pull arm32v6/traefik:1.7 \
             docker run -d --restart=always --network='web' \
               --label='traefik.frontend.rule=Host:monitor.ackerson.de' \
               -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
