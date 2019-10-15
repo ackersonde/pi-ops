@@ -28,6 +28,7 @@ commands:
               -v /var/run/docker.sock:/var/run/docker.sock:ro \
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
+              --label='traefik.enable=true' \
               --label='traefik.http.middlewares.api_auth.basicauth.users=$TRAEFIK_WC_API_BASICAUTH' \
               --label='traefik.http.routers.api.entrypoints=http,httpsecure' \
               --label='traefik.http.routers.api.middlewares=api_auth' \
