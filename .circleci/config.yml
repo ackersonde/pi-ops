@@ -36,10 +36,10 @@ commands:
               --label='traefik.http.routers.api.tls.certResolver=traefikdash' \
               --label='traefik.http.routers.api.tls.domains=monitor.ackerson.de' \
               --label='traefik.http.routers.https-redirect.rule=HostRegexp(`{any:.*}`)' \
-              --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker \
-              --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https \
-              --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true \
-              --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443 \
+              --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
               -p 80:80 -p 443:443 --name traefik arm32v6/traefik:2.0 \
               --api --providers.docker --providers.docker.exposedByDefault=false \
               --entrypoints.http.address=:80 --entrypoints.httpsecure.address=:443 \
