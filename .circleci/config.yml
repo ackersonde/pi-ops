@@ -32,11 +32,11 @@ commands:
               --label='traefik.http.middlewares.api_auth.basicauth.users=$TRAEFIK_WC_API_BASICAUTH' \
               --label='traefik.http.routers.api.entrypoints=http,httpsecure' \
               --label='traefik.http.routers.api.middlewares=api_auth' \
-              --label='traefik.http.routers.api.rule=Host(\`$TRAEFIK_WC_API_HOSTNAME\`)' \
+              --label='traefik.http.routers.api.rule=Host(\\\`$TRAEFIK_WC_API_HOSTNAME\\\`)' \
               --label='traefik.http.routers.api.service=api@internal' \
               --label='traefik.http.routers.api.tls.certResolver=traefikdash' \
-              --label='traefik.http.routers.api.tls.domains=$TRAEFIK_WC_API_HOSTNAME ss' \
-              --label='traefik.http.routers.https-redirect.rule=HostRegexp(`{any:.*}`)' \
+              --label='traefik.http.routers.api.tls.domains=$TRAEFIK_WC_API_HOSTNAME' \
+              --label='traefik.http.routers.https-redirect.rule=HostRegexp(\\\`{any:.*}\\\`)' \
               --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
