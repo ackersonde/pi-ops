@@ -48,7 +48,7 @@ commands:
               --certificatesResolvers.traefikdash.acme.email="dan@ackerson.de" \
               --certificatesResolvers.traefikdash.acme.storage="acme.json" \
               --certificatesResolvers.traefikdash.acme.dnsChallenge.provider=digitalocean \
-              --certificatesResolvers.traefikdash.acme.dnsChallenge.delayBeforeCheck=5""
+              --certificatesResolvers.traefikdash.acme.dnsChallenge.delayBeforeCheck=5"
             EOF
 
             chmod u+x deploy_script.sh
