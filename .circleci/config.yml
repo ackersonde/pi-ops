@@ -32,7 +32,7 @@ commands:
               --label='traefik.http.middlewares.api_auth.basicauth.users=$TRAEFIK_WC_API_BASICAUTH' \
               --label='traefik.http.routers.api.entrypoints=http,httpsecure' \
               --label='traefik.http.routers.api.middlewares=api_auth' \
-              --label='traefik.http.routers.api.rule=Host(`monitor.ackerson.de`)' \
+              --label='traefik.http.routers.api.rule=Host(monitor.ackerson.de)' \
               --label='traefik.http.routers.api.service=api@internal' \
               --label='traefik.http.routers.api.tls.certResolver=traefikdash' \
               --label='traefik.http.routers.api.tls.domains=monitor.ackerson.de' \
