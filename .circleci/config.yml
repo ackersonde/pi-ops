@@ -16,22 +16,40 @@ commands:
             touch traefik/acme.json && \
             chmod 600 traefik/acme.json"
 
-            scp traefik.toml $SSH_USER@$SSH_HOST:~/traefik/traefik.toml
+            # scp traefik.toml $SSH_USER@$SSH_HOST:~/traefik/traefik.toml
             scp update_domain_records.sh $SSH_USER@$SSH_HOST:~/
 
             ssh $SSH_USER@$SSH_HOST "\
             docker network create web || true && \
             docker rm -f traefik || true && \
-            docker pull arm32v6/traefik:1.7 && \
+            docker pull arm32v6/traefik:2.0 && \
             docker run -d --restart=always --network='web' \
-              --label='traefik.frontend.rule=Host:monitor.ackerson.de' \
               -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              -v ~/traefik/traefik.toml:/traefik.toml \
+              -v /var/run/docker.sock:/var/run/docker.sock:ro \
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
-              -p 80:80 -p 443:443 \
-              --name traefik arm32v6/traefik:1.7"
+              --label='traefik.enable=true' \
+              --label='traefik.http.middlewares.api_auth.basicauth.users=$TRAEFIK_WC_API_BASICAUTH' \
+              --label='traefik.http.routers.api.entrypoints=http,httpsecure' \
+              --label='traefik.http.routers.api.middlewares=api_auth' \
+              --label='traefik.http.routers.api.rule=Host(\\\`$TRAEFIK_WC_API_HOSTNAME\\\`)' \
+              --label='traefik.http.routers.api.service=api@internal' \
+              --label='traefik.http.routers.api.tls.certResolver=traefikdash' \
+              --label='traefik.http.routers.api.tls.domains=$TRAEFIK_WC_API_HOSTNAME' \
+              --label='traefik.http.routers.https-redirect.rule=HostRegexp(\\\`{any:.*}\\\`)' \
+              --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
+              -p 80:80 -p 443:443 --name traefik arm32v6/traefik:2.0 \
+              --api --providers.docker --providers.docker.exposedByDefault=false \
+              --entrypoints.http.address=:80 --entrypoints.httpsecure.address=:443 \
+              --accesslog.filepath=/var/log/traefik/access.log \
+              --log.filepath=/var/log/traefik/traefik.log --log.level=INFO \
+              --certificatesResolvers.traefikdash.acme.email="dan@ackerson.de" \
+              --certificatesResolvers.traefikdash.acme.storage="acme.json" \
+              --certificatesResolvers.traefikdash.acme.dnsChallenge.provider=digitalocean \
+              --certificatesResolvers.traefikdash.acme.dnsChallenge.delayBeforeCheck=5"
             EOF
 
             chmod u+x deploy_script.sh
