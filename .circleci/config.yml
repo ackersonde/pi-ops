@@ -22,7 +22,6 @@ commands:
             ssh $SSH_USER@$SSH_HOST "\
             docker network create web || true && \
             docker rm -f traefik || true && \
-            docker pull arm32v6/traefik:2.1 && \
             docker run -d --restart=always --network='web' \
               -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
               -v /var/run/docker.sock:/var/run/docker.sock:ro \
@@ -41,7 +40,7 @@ commands:
               --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
-              -p 80:80 -p 443:443 --name traefik arm32v6/traefik:2.0 \
+              -p 80:80 -p 443:443 --name traefik arm32v6/traefik:2.1 \
               --api --providers.docker --providers.docker.exposedByDefault=false \
               --entrypoints.http.address=:80 --entrypoints.httpsecure.address=:443 \
               --accesslog.filepath=/var/log/traefik/access.log \
