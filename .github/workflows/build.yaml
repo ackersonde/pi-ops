@@ -65,7 +65,7 @@ jobs:
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               --label='traefik.enable=true' --label='traefik.docker.network=web' \
-              --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
+              --label='traefik.http.middlewares.api_auth.basicauth.users={{BASIC_AUTH_STRING}}' \
               --label='traefik.http.routers.api.entrypoints=web,secure' \
               --label='traefik.http.routers.api.middlewares=api_auth' \
               --label='traefik.http.routers.api.rule=Host(\\\`monitor.ackerson.de\\\`)' \
@@ -88,6 +88,7 @@ jobs:
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5"
           DEPLOY_EOF
+          sed -i -e "s@{{BASIC_AUTH_STRING}}@${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}@" deploy.sh
           chmod u+x deploy.sh
 
           ./digitaloceans/do -fn=createNewServer
