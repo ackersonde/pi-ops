@@ -43,19 +43,11 @@ jobs:
           mkdir ~/.ssh
 
           cat <<DEPLOY_EOF >deploy.sh
-          ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN "\
-            mkdir -p traefik/logs || true && \
-            touch traefik/acme.json && \
-            chmod 600 traefik/acme.json"
-
           export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
-          ssh -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN<<EOF
-            mkdir traefik || true && mkdir my-ca || true
-            touch -m traefik/acme.json && chmod 600 traefik/acme.json
-
-            sudo touch -m $LOG_FILES
-            sudo chown ubuntu:ubuntu $LOG_FILES
-          EOF
+          ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN "\
+            mkdir -p traefik/logs || true && mkdir my-ca || true && \
+            touch -m traefik/acme.json && chmod 600 traefik/acme.json \
+            sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES"
 
           scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
           scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
@@ -68,15 +60,9 @@ jobs:
             docker network create web || true && \
             docker rm -f traefik || true && \
             docker run -d --restart=always --network='web' \
-              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
+              -e DO_AUTH_TOKEN=${{ secrets.CTX_DIGITALOCEAN_TOKEN }} \
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
-              --api --providers.docker --providers.docker.exposedByDefault=false \
-              --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
-              --certificatesResolvers.letsencrypt.acme.email=dan@ackerson.de \
-              --certificatesResolvers.letsencrypt.acme.storage=acme.json \
-              --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
-              --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5 \
               --label='traefik.enable=true' --label='traefik.docker.network=web' \
               --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
               --label='traefik.http.routers.api.entrypoints=web,secure' \
@@ -90,9 +76,16 @@ jobs:
               --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
+              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4 \
               --accesslog.filepath=/var/log/traefik/access.log \
               --log.filepath=/var/log/traefik/traefik.log --log.level=WARN \
-              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4"
+              --api --providers.docker --providers.docker.exposedByDefault=false \
+              --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
+              --ping.entrypoint=secure \
+              --certificatesResolvers.letsencrypt.acme.email=dan@ackerson.de \
+              --certificatesResolvers.letsencrypt.acme.storage=acme.json \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5"
           DEPLOY_EOF
           chmod u+x deploy.sh
 
