@@ -68,7 +68,7 @@ jobs:
             docker network create web || true && \
             docker rm -f traefik || true && \
             docker run -d --restart=always --network='web' \
-              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN --ping=true \
+              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN \
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               --api --providers.docker --providers.docker.exposedByDefault=false \
