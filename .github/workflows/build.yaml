@@ -22,6 +22,7 @@ jobs:
           cd digitaloceans
           go get -t -d -v ./...
           go build do.go
+          cd ../
 
       - name: Configure secrets
         run: |
@@ -102,9 +103,10 @@ jobs:
         run: |
           ./digitaloceans/do -fn=createNewServer
 
-          source /tmp/new_digital_ocean_droplet_params
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
           echo "This instance is @ ${public_ip_address}"
+          cat PUBLIC_IP=${public_ip_address} >> /tmp/new_digital_ocean_droplet_params
+          source /tmp/new_digital_ocean_droplet_params
 
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
           sleep 20
@@ -126,6 +128,7 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
-          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
+          source /tmp/new_digital_ocean_droplet_params
           rm digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
+          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
+          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
