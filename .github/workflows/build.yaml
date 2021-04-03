@@ -67,7 +67,7 @@ jobs:
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               --label='traefik.enable=true' --label='traefik.docker.network=web' \
-              --label='traefik.http.middlewares.api_auth.basicauth.users={{BASIC_AUTH_STRING}}' \
+              --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
               --label='traefik.http.routers.api.entrypoints=web,secure' \
               --label='traefik.http.routers.api.middlewares=api_auth' \
               --label='traefik.http.routers.api.rule=Host(\\\`monitor.ackerson.de\\\`)' \
@@ -90,7 +90,6 @@ jobs:
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5"
           DEPLOY_EOF
-          sed -i -e "s@{{BASIC_AUTH_STRING}}@${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}@" deploy.sh
           chmod u+x deploy.sh
 
           mkdir ~/.ssh
@@ -112,4 +111,4 @@ jobs:
 
           rm -Rf scripts/ digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
-          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
+          #./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
