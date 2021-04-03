@@ -24,11 +24,6 @@ jobs:
           go build do.go
           cd ../
 
-      - name: Configure secrets
-        run: |
-          pwd
-          ls -lrt
-          ls -lrt scripts/
           sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
           sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
@@ -47,8 +42,6 @@ jobs:
           envsubst < do_ubuntu_userdata.sh > digitalocean_ubuntu_userdata.sh
           mkdir ~/.ssh
 
-      - name: Prepare deploy script
-        run: |
           cat  \<<DEPLOY_EOF >deploy.sh
             ssh -o StrictHostKeyChecking=no $SSH_CXN "\
               mkdir -p traefik/logs || true && \
@@ -102,8 +95,6 @@ jobs:
           DEPLOY_EOF
           chmod u+x deploy.sh
 
-      - name: Launch DO Proxy server
-        run: |
           ./digitaloceans/do -fn=createNewServer
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
@@ -114,12 +105,8 @@ jobs:
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
           sleep 20
 
-      - name: Copy build artifacts to proxy server
-        run: |
           scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$NEW_SERVER_IPV4:~/
 
-      - name: Deploy traefik and scripts to PI
-        run: |
           ssh root@$NEW_SERVER_IPV4 << DIGITALOCEAN_EOF
             ./deploy.sh
           DIGITALOCEAN_EOF
@@ -128,10 +115,6 @@ jobs:
             -d text="<https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID | $GITHUB_REPOSITORY @ $GITHUB_RUN_ID>" \
             https://slack.com/api/chat.postMessage
 
-      - name: Cleanup
-        if: always()
-        run: |
-          source /tmp/new_digital_ocean_droplet_params
           rm digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
           ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
