@@ -68,16 +68,15 @@ jobs:
             docker network create web || true && \
             docker rm -f traefik || true && \
             docker run -d --restart=always --network='web' \
-              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4 \
+              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN --ping=true \
+              -v ~/traefik/logs:/var/log/traefik/ \
+              -v ~/traefik/acme.json:/acme.json \
               --api --providers.docker --providers.docker.exposedByDefault=false \
               --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
-              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN --ping=true \
               --certificatesResolvers.letsencrypt.acme.email=dan@ackerson.de \
               --certificatesResolvers.letsencrypt.acme.storage=acme.json \
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
               --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5 \
-              -v ~/traefik/logs:/var/log/traefik/ \
-              -v ~/traefik/acme.json:/acme.json \
               --label='traefik.enable=true' --label='traefik.docker.network=web' \
               --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
               --label='traefik.http.routers.api.entrypoints=web,secure' \
@@ -92,14 +91,14 @@ jobs:
               --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
               --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
               --accesslog.filepath=/var/log/traefik/access.log \
-              --log.filepath=/var/log/traefik/traefik.log --log.level=WARN"
+              --log.filepath=/var/log/traefik/traefik.log --log.level=WARN \
+              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4"
           DEPLOY_EOF
           chmod u+x deploy.sh
 
           ./digitaloceans/do -fn=createNewServer
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
-          echo "This instance is @ ${public_ip_address}"
           echo PUBLIC_IP=${public_ip_address} >> /tmp/new_digital_ocean_droplet_params
           source /tmp/new_digital_ocean_droplet_params
 
