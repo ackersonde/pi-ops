@@ -43,55 +43,56 @@ jobs:
           mkdir ~/.ssh
 
           cat <<DEPLOY_EOF >deploy.sh
-            ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN "\
-              mkdir -p traefik/logs || true && \
-              touch traefik/acme.json && \
-              chmod 600 traefik/acme.json"
+          ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN "\
+            mkdir -p traefik/logs || true && \
+            touch traefik/acme.json && \
+            chmod 600 traefik/acme.json"
 
-            export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
-            ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN << EOF
-              mkdir traefik || true && mkdir my-ca || true
-              touch traefik/acme.json && chmod 600 traefik/acme.json
+          export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+          ssh -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN<<EOF
+            mkdir traefik || true && mkdir my-ca || true
+            touch -m traefik/acme.json && chmod 600 traefik/acme.json
 
-              sudo touch -m $LOG_FILES
-              sudo chown ubuntu:ubuntu $LOG_FILES
-            EOF
+            sudo touch -m $LOG_FILES
+            sudo chown ubuntu:ubuntu $LOG_FILES
+          EOF
 
-            scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
-            scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
-            scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key ubuntu@[$SSH_CXN]:~/my-ca/
-            scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
-            scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
+          scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
+          scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
+          scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key ubuntu@[$SSH_CXN]:~/my-ca/
+          scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
+          scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
 
-            ssh ubuntu@$SSH_CXN "\
-              docker network create web || true && \
-              docker rm -f traefik || true && \
-              docker run -d --restart=always --network='web' \
-                -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4s \
-                --api --providers.docker --providers.docker.exposedByDefault=false \
-                --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
-                -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN --ping=true \
-                --certificatesResolvers.letsencrypt.acme.email="dan@ackerson.de" \
-                --certificatesResolvers.letsencrypt.acme.storage="acme.json" \
-                --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
-                --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5 \
-                -v ~/traefik/logs:/var/log/traefik/ \
-                -v ~/traefik/acme.json:/acme.json \
-                --label='traefik.enable=true' --label='traefik.docker.network=web' \
-                --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
-                --label='traefik.http.routers.api.entrypoints=web,secure' \
-                --label='traefik.http.routers.api.middlewares=api_auth' \
-                --label='traefik.http.routers.api.rule=Host(\\\`monitor.ackerson.de\\\`)' \
-                --label='traefik.http.routers.api.service=api@internal' \
-                --label='traefik.http.routers.api.tls.certResolver=letsencrypt' \
-                --label='traefik.http.routers.api.tls.domains=monitor.ackerson.de' \
-                --label='traefik.http.routers.https-redirect.rule=HostRegexp(\\\`{any:.*}\\\`)' \
-                --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
-                --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
-                --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
-                --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
-                --accesslog.filepath=/var/log/traefik/access.log \
-                --log.filepath=/var/log/traefik/traefik.log --log.level=WARN"
+          ssh ubuntu@$SSH_CXN "\
+            crontab /tmp/crontab.txt && \
+            docker network create web || true && \
+            docker rm -f traefik || true && \
+            docker run -d --restart=always --network='web' \
+              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4 \
+              --api --providers.docker --providers.docker.exposedByDefault=false \
+              --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
+              -e DO_AUTH_TOKEN=$CTX_DIGITALOCEAN_TOKEN --ping=true \
+              --certificatesResolvers.letsencrypt.acme.email=dan@ackerson.de \
+              --certificatesResolvers.letsencrypt.acme.storage=acme.json \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5 \
+              -v ~/traefik/logs:/var/log/traefik/ \
+              -v ~/traefik/acme.json:/acme.json \
+              --label='traefik.enable=true' --label='traefik.docker.network=web' \
+              --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
+              --label='traefik.http.routers.api.entrypoints=web,secure' \
+              --label='traefik.http.routers.api.middlewares=api_auth' \
+              --label='traefik.http.routers.api.rule=Host(\\\`monitor.ackerson.de\\\`)' \
+              --label='traefik.http.routers.api.service=api@internal' \
+              --label='traefik.http.routers.api.tls.certResolver=letsencrypt' \
+              --label='traefik.http.routers.api.tls.domains=monitor.ackerson.de' \
+              --label='traefik.http.routers.https-redirect.rule=HostRegexp(\\\`{any:.*}\\\`)' \
+              --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
+              --accesslog.filepath=/var/log/traefik/access.log \
+              --log.filepath=/var/log/traefik/traefik.log --log.level=WARN"
           DEPLOY_EOF
           chmod u+x deploy.sh
 
