@@ -42,7 +42,7 @@ jobs:
           envsubst < do_ubuntu_userdata.sh > digitalocean_ubuntu_userdata.sh
           mkdir ~/.ssh
 
-          cat  \<<DEPLOY_EOF >deploy.sh
+          cat <<DEPLOY_EOF >deploy.sh
             ssh -o StrictHostKeyChecking=no $SSH_CXN "\
               mkdir -p traefik/logs || true && \
               touch traefik/acme.json && \
