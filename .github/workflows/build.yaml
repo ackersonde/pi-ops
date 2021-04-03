@@ -26,7 +26,10 @@ jobs:
 
       - name: Configure secrets
         run: |
-          sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
+          pwd
+          ls -lrt
+          ls -lrt scripts/
+          sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
           sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
           sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
