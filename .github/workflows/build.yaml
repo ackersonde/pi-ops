@@ -44,11 +44,12 @@ jobs:
           cat <<DEPLOY_EOF >deploy.sh
           #!/usr/bin/bash
           export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
-          ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN "\
+          ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN '\
+            export LOG_FILES='"'$LOG_FILES'"'; \
             mkdir -p traefik/logs || true && \
             mkdir my-ca || true && \
             touch -m traefik/acme.json && chmod 600 traefik/acme.json && \
-            sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES"
+            sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
           scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
           scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
@@ -111,4 +112,4 @@ jobs:
 
           rm -Rf scripts/ digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
-          #./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
+          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
