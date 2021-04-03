@@ -12,7 +12,7 @@ jobs:
       CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
       CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
       CTX_RASPBERRYPI_SSH_PRIVKEY: "${{ secrets.CTX_RASPBERRYPI_SSH_PRIVKEY }}"
-      SSH_CXN: ubuntu@[${{ secrets.CTX_IPV6_MASTER_HOME }}]
+      SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -43,13 +43,13 @@ jobs:
           mkdir ~/.ssh
 
           cat <<DEPLOY_EOF >deploy.sh
-            ssh -o StrictHostKeyChecking=no $SSH_CXN "\
+            ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN "\
               mkdir -p traefik/logs || true && \
               touch traefik/acme.json && \
               chmod 600 traefik/acme.json"
 
             export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
-            ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" $SSH_CXN << EOF
+            ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" ubuntu@$SSH_CXN << EOF
               mkdir traefik || true && mkdir my-ca || true
               touch traefik/acme.json && chmod 600 traefik/acme.json
 
@@ -57,13 +57,13 @@ jobs:
               sudo chown ubuntu:ubuntu $LOG_FILES
             EOF
 
-            scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
-            scp scripts/update_*.sh $SSH_CXN:~/
-            scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key $SSH_CXN:~/my-ca/
-            scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
-            scp scripts/crontab.txt $SSH_CXN:/tmp/
+            scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
+            scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
+            scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key ubuntu@[$SSH_CXN]:~/my-ca/
+            scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
+            scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
 
-            ssh $SSH_CXN "\
+            ssh ubuntu@$SSH_CXN "\
               docker network create web || true && \
               docker rm -f traefik || true && \
               docker run -d --restart=always --network='web' \
@@ -107,7 +107,7 @@ jobs:
 
           scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$NEW_SERVER_IPV4:~/
 
-          ssh root@$NEW_SERVER_IPV4 << DIGITALOCEAN_EOF
+          ssh -q root@$NEW_SERVER_IPV4 << DIGITALOCEAN_EOF
             ./deploy.sh
           DIGITALOCEAN_EOF
 
