@@ -61,6 +61,7 @@ jobs:
             docker rm -f traefik || true && \
             docker run -d --restart=always --network='web' \
               -e DO_AUTH_TOKEN=${{ secrets.CTX_DIGITALOCEAN_TOKEN }} \
+              -v /var/run/docker.sock:/var/run/docker.sock:ro \
               -v ~/traefik/logs:/var/log/traefik/ \
               -v ~/traefik/acme.json:/acme.json \
               --label='traefik.enable=true' --label='traefik.docker.network=web' \
