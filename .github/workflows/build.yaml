@@ -114,6 +114,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$NEW_SERVER_IPV4:~/
 
       - name: Deploy traefik and scripts to PI
+        run: |
           ssh root@$NEW_SERVER_IPV4 << DIGITALOCEAN_EOF
             ./deploy.sh
           DIGITALOCEAN_EOF
