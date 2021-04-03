@@ -99,7 +99,7 @@ jobs:
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
           echo "This instance is @ ${public_ip_address}"
-          cat PUBLIC_IP=${public_ip_address} >> /tmp/new_digital_ocean_droplet_params
+          echo PUBLIC_IP=${public_ip_address} >> /tmp/new_digital_ocean_droplet_params
           source /tmp/new_digital_ocean_droplet_params
 
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
