@@ -98,7 +98,7 @@ jobs:
           source /tmp/new_digital_ocean_droplet_params
 
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
-          sleep 20
+          sleep 30
 
           scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$NEW_SERVER_IPV4:~/
           ssh root@$NEW_SERVER_IPV4 ./deploy.sh
