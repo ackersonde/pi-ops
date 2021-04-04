@@ -111,4 +111,5 @@ jobs:
 
           rm -Rf scripts/ digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
-          #./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
+          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
+          #./digitaloceans/do -fn=deleteKey -keyID=$NEW_KEY_ID # TODO
