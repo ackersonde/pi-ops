@@ -59,7 +59,7 @@ jobs:
 
           ssh ubuntu@$SSH_CXN "\
             crontab /tmp/crontab.txt && \
-            docker network create web || true && \
+            docker network create --ipv6 web || true && \
             docker rm -f traefik || true && \
             docker run -d --restart=always --network='web' \
               -e DO_AUTH_TOKEN=${{ secrets.CTX_DIGITALOCEAN_TOKEN }} \
