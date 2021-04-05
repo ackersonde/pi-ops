@@ -40,8 +40,6 @@ jobs:
           echo "${{ secrets.CA_KEY }}" > scripts/ca_key
           chmod 600 scripts/ca_key
 
-          envsubst < do_ubuntu_userdata.sh > digitalocean_ubuntu_userdata.sh
-
           cat <<DEPLOY_EOF >deploy.sh
           #!/usr/bin/bash
           ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN '\
@@ -89,6 +87,7 @@ jobs:
           DEPLOY_EOF
           chmod u+x deploy.sh
 
+          envsubst < digitaloceans/do_ubuntu_userdata.sh > digitalocean_ubuntu_userdata.sh
           mkdir ~/.ssh
           ./digitaloceans/do -fn=createNewServer
 
