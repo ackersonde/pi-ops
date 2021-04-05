@@ -1,0 +1,111 @@
+name: Deploy Docker Traefik to Pi
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    env:
+      CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
+      CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
+      CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
+      CTX_RASPBERRYPI_SSH_PRIVKEY: "${{ secrets.CTX_RASPBERRYPI_SSH_PRIVKEY }}"
+      SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
+      LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - name: Build and deploy application
+        run: |
+          git clone https://github.com/ackersonde/digitaloceans.git
+          cd digitaloceans
+          go get -t -d -v ./...
+          go build do.go
+          cd ../
+
+          sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
+          sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
+
+          sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@${{ secrets.GIT_APP_CLIENT_ID }}@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_INSTALL_ID}}@${{ secrets.GIT_INSTALL_ID }}@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}@" scripts/github_deploy_params
+          sed -i -e "s@{{CTX_SLACK_NOTIFICATIONS_TOKEN}}@${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }}@" scripts/github_deploy_params
+          chmod 600 scripts/github_deploy_params
+
+          echo "${{ secrets.GIT_APP_SECRETS_PK_PEM }}" > scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
+          chmod 600 scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
+          echo "${{ secrets.CA_KEY }}" > scripts/ca_key
+          chmod 600 scripts/ca_key
+
+          envsubst < do_ubuntu_userdata.sh > digitalocean_ubuntu_userdata.sh
+
+          cat <<DEPLOY_EOF >deploy.sh
+          #!/usr/bin/bash
+          ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN '\
+            mkdir -p traefik/logs || true && mkdir my-ca || true && \
+            touch -m traefik/acme.json && chmod 600 traefik/acme.json && \
+            sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
+
+          scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
+          scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
+          scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
+          scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
+          scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
+
+          ssh ubuntu@$SSH_CXN "\
+            crontab /tmp/crontab.txt && \
+            docker network create --ipv6 --subnet=${{ secrets.DOCKER_IPV6_BRIDGE_SUBNET }} web || true && \
+            docker rm -f traefik || true && \
+            docker run -d --restart=always --network='web' \
+              -e DO_AUTH_TOKEN=${{ secrets.CTX_DIGITALOCEAN_TOKEN }} \
+              -v /var/run/docker.sock:/var/run/docker.sock:ro \
+              -v ~/traefik/logs:/var/log/traefik/ \
+              -v ~/traefik/acme.json:/acme.json \
+              --label='traefik.enable=true' --label='traefik.docker.network=web' \
+              --label='traefik.http.middlewares.api_auth.basicauth.users=${{ secrets.CTX_BASIC_AUTH_USER }}:${{ secrets.CTX_BASIC_AUTH_PASSWD }}' \
+              --label='traefik.http.routers.api.entrypoints=web,secure' \
+              --label='traefik.http.routers.api.middlewares=api_auth' \
+              --label='traefik.http.routers.api.rule=Host(\\\`monitor.ackerson.de\\\`)' \
+              --label='traefik.http.routers.api.service=api@internal' \
+              --label='traefik.http.routers.api.tls.certResolver=letsencrypt' \
+              --label='traefik.http.routers.api.tls.domains=monitor.ackerson.de' \
+              --label='traefik.http.routers.https-redirect.rule=HostRegexp(\\\`{any:.*}\\\`)' \
+              --label='traefik.http.routers.https-redirect.middlewares=https-redirect@docker' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.scheme=https' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.permanent=true' \
+              --label='traefik.http.middlewares.https-redirect.redirectscheme.port=443' \
+              -p 80:80 -p 443:443 --name traefik arm64v8/traefik:2.4 \
+              --accesslog.filepath=/var/log/traefik/access.log \
+              --log.filepath=/var/log/traefik/traefik.log --log.level=WARN \
+              --api --providers.docker --providers.docker.exposedByDefault=false \
+              --entrypoints.web.address=:80 --entrypoints.secure.address=:443 \
+              --certificatesResolvers.letsencrypt.acme.email=dan@ackerson.de \
+              --certificatesResolvers.letsencrypt.acme.storage=acme.json \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean \
+              --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5"
+          DEPLOY_EOF
+          chmod u+x deploy.sh
+
+          mkdir ~/.ssh
+          ./digitaloceans/do -fn=createNewServer
+
+          public_ip_address=$(curl -s https://checkip.amazonaws.com)
+          echo PUBLIC_IP=${public_ip_address} >> /tmp/new_digital_ocean_droplet_params
+          source /tmp/new_digital_ocean_droplet_params
+
+          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
+          sleep 30
+
+          scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$NEW_SERVER_IPV4:~/
+          ssh root@$NEW_SERVER_IPV4 ./deploy.sh
+
+          curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
+            -d text="<https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID | $GITHUB_REPOSITORY @ $GITHUB_RUN_ID>" \
+            https://slack.com/api/chat.postMessage
+
+          rm -Rf scripts/ digitalocean_ubuntu_userdata.sh deploy.sh ~/.ssh/id_rsa /tmp/new_digital_ocean_droplet_params
+          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$PUBLIC_IP
+          ./digitaloceans/do -fn=deleteServer -dropletID=$NEW_DROPLET_ID -keyID=$NEW_SSH_KEY_ID
