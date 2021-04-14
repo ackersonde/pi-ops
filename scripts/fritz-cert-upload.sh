@@ -12,6 +12,9 @@ HOST=https://fritz.ackerson.de
 TMP="$(mktemp -t XXXXXX)"
 chmod 600 $TMP
 
+/usr/bin/scp -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa_digitalocean \
+    root@ackerson.de:/home/ubuntu/traefik/acme.json /home/ubuntu/traefik/acme.json
+/usr/bin/chmod 600 /home/ubuntu/traefik/acme.json
 # parse out certificates from Traefik 2.2 acme.json file
 /home/ubuntu/traefik/traefik-certs-dumper file --version v2 \
     --source /home/ubuntu/traefik/acme.json \
@@ -36,6 +39,8 @@ printf -- "--$BOUNDARY--" >> $TMP
 
 # upload the certificate to the box
 wget -q -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-data boundary=$BOUNDARY" --post-file $TMP | grep SSL
+
+# TODO: this new acme.json cert needs to be uploaded to ACME_JSON @ https://github.com/ackersonde/digitaloceans/settings/secrets/actions
 
 # clean up
 rm -f $TMP

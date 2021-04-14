@@ -18,7 +18,7 @@ GITHUB_INSTALL_ID = os.environ['GITHUB_INSTALL_ID']
 GITHUB_SECRETS_PK_PEM_FILE = os.environ['GITHUB_SECRETS_PK_PEM_FILE']
 SSH_CERT_FILE = os.environ['SSH_CERT_FILE']
 SSH_PRIV_KEY = os.environ['SSH_PRIV_KEY']
-WG_PEER_CONFIG_FILE = os.environ['WG_PEER_CONFIG_FILE']
+ACME_JSON = "/home/ubuntu/traefik/acme.json"
 
 
 def fatal(message):
@@ -119,10 +119,8 @@ def main():
                              "CTX_SERVER_DEPLOY_SECRET_B64")
         update_github_secret(token_headers, github_pub_key_JSON, SSH_CERT_FILE,
                              "CTX_SERVER_DEPLOY_CACERT_B64")
-        update_github_secret(token_headers, github_pub_key_JSON,
-                             WG_PEER_CONFIG_FILE,
-                             "CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG",
-                             b64encode=False)
+        update_github_secret(token_headers, github_pub_key_JSON, ACME_JSON,
+                             "CTX_ACME_JSON", b64encode=False)
 
         redeploy_bender_slackbot(access_token)
     except HTTPError as http_err:
