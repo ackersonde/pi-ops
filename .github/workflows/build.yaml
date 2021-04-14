@@ -63,10 +63,8 @@ jobs:
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
           source /tmp/new_digital_ocean_droplet_params
 
-          echo root@$DROPLET_HOST
-
-          scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$DROPLET_HOST:~/
-          ssh root@$DROPLET_HOST ./deploy.sh
+          scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@ackerson.de:~/
+          ssh root@ackerson.de ./deploy.sh
 
           rm -Rf .ssh/ scripts/ deploy.sh /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address -keyID=$NEW_SSH_KEY_ID
