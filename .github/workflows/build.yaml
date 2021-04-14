@@ -60,7 +60,7 @@ jobs:
           chmod 400 ~/.ssh/id_rsa_deploy
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
-          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
+          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
           source /tmp/new_digital_ocean_droplet_params
 
           echo root@$DROPLET_HOST
