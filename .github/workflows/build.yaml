@@ -54,10 +54,10 @@ jobs:
           chmod u+x deploy.sh
 
           mkdir ~/.ssh
-          cat <<EOF >~/.ssh/id_rsa_deploy
+          cat <<EOF >~/.ssh/id_rsa
           ${{ secrets.CTX_DIGITALOCEAN_SSH_PRIVKEY }}
           EOF
-          chmod 400 ~/.ssh/id_rsa_deploy
+          chmod 400 ~/.ssh/id_rsa
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
