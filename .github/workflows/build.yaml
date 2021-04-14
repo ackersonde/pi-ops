@@ -63,6 +63,8 @@ jobs:
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address
           source /tmp/new_digital_ocean_droplet_params
 
+          echo root@$DROPLET_HOST
+
           scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@$DROPLET_HOST:~/
           ssh root@$DROPLET_HOST ./deploy.sh
 
