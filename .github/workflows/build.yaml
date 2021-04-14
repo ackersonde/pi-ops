@@ -39,7 +39,7 @@ jobs:
           echo "${{ secrets.CA_KEY }}" > scripts/ca_key
           chmod 600 scripts/ca_key
 
-          cat <<DEPLOY_EOF >deploy.sh
+          cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
           ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN '\
             mkdir my-ca || true && \
@@ -51,7 +51,7 @@ jobs:
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
           scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
           DEPLOY_EOF
-          chmod u+x deploy.sh
+          chmod u+x deploy-pi-ops.sh
 
           mkdir ~/.ssh
           cat <<EOF >~/.ssh/id_rsa
@@ -63,10 +63,11 @@ jobs:
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
           source /tmp/new_digital_ocean_droplet_params
 
-          scp -o StrictHostKeyChecking=no -r scripts deploy.sh root@ackerson.de:~/
-          ssh root@ackerson.de ./deploy.sh
+          scp -o StrictHostKeyChecking=no -r scripts deploy-pi-ops.sh root@ackerson.de:~/
+          ssh root@ackerson.de ./deploy-pi-ops.sh
+          ssh root@ackerson.de rm -Rf scripts/ deploy-pi-ops.sh
 
-          rm -Rf .ssh/ scripts/ deploy.sh /tmp/new_digital_ocean_droplet_params
+          rm -Rf .ssh/ scripts/ deploy-pi-ops.sh /tmp/new_digital_ocean_droplet_params
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
           curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
