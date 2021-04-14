@@ -1,5 +1,2 @@
-# pi-traefik
-running Traefik on pi
-
-## TODO
-setup logrotate.d for /var/log/traefik/traefik.log
+# pi-ops
+This repo is a collection of operation scripts I stub out and use for my various sites.

@@ -40,8 +40,6 @@ printf -- "--$BOUNDARY--" >> $TMP
 # upload the certificate to the box
 wget -q -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-data boundary=$BOUNDARY" --post-file $TMP | grep SSL
 
-# TODO: this new acme.json cert needs to be uploaded to ACME_JSON @ https://github.com/ackersonde/digitaloceans/settings/secrets/actions
-
 # clean up
 rm -f $TMP
 rm -Rf /home/ubuntu/traefik/dump/
