@@ -82,13 +82,13 @@ def update_github_secret(
     r.raise_for_status()
 
 
-def redeploy_bender_slackbot(access_token: str):
+def redeploy_digitalocean(access_token: str):
     token_headers = {'Accept': 'application/vnd.github.v3+json',
                      'Authorization': f'token {access_token}'}
 
     resp = requests.post(
-        'https://api.github.com/repos/ackersonde/bender-slackbot/actions/workflows/build.yml/dispatches',
-        json={"ref": "master"},
+        'https://api.github.com/repos/ackersonde/digitaloceans/actions/workflows/build.yml/dispatches',
+        json={"ref": "main"},
         headers=token_headers)
     resp.raise_for_status()
 
@@ -122,7 +122,7 @@ def main():
         update_github_secret(token_headers, github_pub_key_JSON, ACME_JSON,
                              "CTX_ACME_JSON", b64encode=False)
 
-        redeploy_bender_slackbot(access_token)
+        redeploy_digitalocean(access_token)
     except HTTPError as http_err:
         fatal(f'HTTP error occurred: {http_err}')
     except Exception as err:
