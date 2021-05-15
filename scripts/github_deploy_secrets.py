@@ -87,7 +87,7 @@ def redeploy_digitalocean(access_token: str):
                      'Authorization': f'token {access_token}'}
 
     resp = requests.post(
-        'https://api.github.com/repos/ackersonde/digitaloceans/actions/workflows/7264426/dispatches',
+        'https://api.github.com/repos/ackersonde/digitaloceans/actions/workflows/build.yml/dispatches',
         json={"ref": "main"},
         headers=token_headers)
     resp.raise_for_status()
