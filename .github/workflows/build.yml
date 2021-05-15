@@ -61,7 +61,6 @@ jobs:
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
-          source /tmp/new_digital_ocean_droplet_params
 
           scp -o StrictHostKeyChecking=no -r scripts deploy-pi-ops.sh root@ackerson.de:~/
           ssh root@ackerson.de ./deploy-pi-ops.sh
