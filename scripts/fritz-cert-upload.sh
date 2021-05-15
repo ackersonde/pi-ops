@@ -7,13 +7,14 @@ USERNAME="{{CTX_ROUTER_USER}}"
 PASSWORD="{{CTX_ROUTER_PASSWD}}"
 CERTPATH="/home/ubuntu/traefik/dump"
 HOST=https://fritz.ackerson.de
+WGET="wget" # add `--no-check-certificate` if/when you've missed the expiration
 
 # make and secure a temporary file
 TMP="$(mktemp -t XXXXXX)"
 chmod 600 $TMP
 
 /usr/bin/scp -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa_digitalocean \
-    root@ackerson.de:/home/ubuntu/traefik/acme.json /home/ubuntu/traefik/acme.json
+    root@ackerson.de:/root/traefik/acme.json /home/ubuntu/traefik/acme.json
 /usr/bin/chmod 600 /home/ubuntu/traefik/acme.json
 # parse out certificates from Traefik 2.2 acme.json file
 /home/ubuntu/traefik/traefik-certs-dumper file --version v2 \
@@ -21,9 +22,9 @@ chmod 600 $TMP
     --dest /home/ubuntu/traefik/dump
 
 # login to the box and get a valid SID
-CHALLENGE=`wget -q -O - $HOST/login_sid.lua | sed -e 's/^.*<Challenge>//' -e 's/<\/Challenge>.*$//'`
+CHALLENGE=`$WGET -q -O - $HOST/login_sid.lua | sed -e 's/^.*<Challenge>//' -e 's/<\/Challenge>.*$//'`
 HASH="`echo -n $CHALLENGE-$PASSWORD | iconv -f ASCII -t UTF16LE |md5sum|awk '{print $1}'`"
-SID=`wget -q -O - "$HOST/login_sid.lua?sid=0000000000000000&username=$USERNAME&response=$CHALLENGE-$HASH"| sed -e 's/^.*<SID>//' -e 's/<\/SID>.*$//'`
+SID=`$WGET -q -O - "$HOST/login_sid.lua?sid=0000000000000000&username=$USERNAME&response=$CHALLENGE-$HASH"| sed -e 's/^.*<SID>//' -e 's/<\/SID>.*$//'`
 
 # generate our upload request
 BOUNDARY="---------------------------"`date +%Y%m%d%H%M%S`
@@ -38,7 +39,7 @@ printf "\r\n" >> $TMP
 printf -- "--$BOUNDARY--" >> $TMP
 
 # upload the certificate to the box
-wget -q -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-data boundary=$BOUNDARY" --post-file $TMP | grep SSL
+$WGET -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-data boundary=$BOUNDARY" --post-file $TMP | grep SSL
 
 # clean up
 rm -f $TMP
