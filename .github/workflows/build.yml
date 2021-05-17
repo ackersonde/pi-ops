@@ -66,7 +66,7 @@ jobs:
           ssh root@ackerson.de ./deploy-pi-ops.sh
           ssh root@ackerson.de rm -Rf scripts/ deploy-pi-ops.sh
 
-          rm -Rf .ssh/ scripts/ deploy-pi-ops.sh /tmp/new_digital_ocean_droplet_params
+          rm -Rf .ssh/ scripts/ deploy-pi-ops.sh
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
           curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
