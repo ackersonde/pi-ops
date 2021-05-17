@@ -1,4 +1,4 @@
-![Deploy Infra scripts to PI](https://github.com/ackersonde/telegram-bot/workflows/Deploy%20Infra%20scripts%20to%20PI/badge.svg)
+![Deploy Infra scripts to PI](https://github.com/ackersonde/pi-ops/workflows/Deploy%20Infra%20scripts%20to%20PI/badge.svg)
 
 # pi-ops
 This repo is a collection of operation scripts I stub out and use for my various websites, bots and infrastructure.
