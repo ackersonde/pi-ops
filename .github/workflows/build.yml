@@ -1,4 +1,4 @@
-name: Deploy Docker Traefik to Pi
+name: Deploy Infra scripts to PI
 
 on:
   push:
