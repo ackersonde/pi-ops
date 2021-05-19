@@ -46,7 +46,7 @@ jobs:
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
           scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
-          scp scripts/update_*.sh ubuntu@[$SSH_CXN]:~/
+          scp scripts/update_*.sh scripts/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
           scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
           scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
