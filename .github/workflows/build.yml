@@ -8,9 +8,6 @@ jobs:
   deploy:
     runs-on: ubuntu-20.04
     env:
-      CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
-      CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
-      CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
       SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
       LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
     steps:

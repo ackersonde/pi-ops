@@ -18,6 +18,7 @@ GITHUB_INSTALL_ID = os.environ['GITHUB_INSTALL_ID']
 GITHUB_SECRETS_PK_PEM_FILE = os.environ['GITHUB_SECRETS_PK_PEM_FILE']
 SSH_CERT_FILE = os.environ['SSH_CERT_FILE']
 SSH_PRIV_KEY = os.environ['SSH_PRIV_KEY']
+SSH_PUB_KEY = os.environ['SSH_PUB_KEY']
 ACME_JSON = "/home/ubuntu/traefik/acme.json"
 
 
@@ -119,6 +120,8 @@ def main():
                              "CTX_SERVER_DEPLOY_SECRET_B64")
         update_github_secret(token_headers, github_pub_key_JSON, SSH_CERT_FILE,
                              "CTX_SERVER_DEPLOY_CACERT_B64")
+        update_github_secret(token_headers, github_pub_key_JSON, SSH_PUB_KEY,
+                             "CTX_SERVER_DEPLOY_PUBLIC_B64")
         update_github_secret(token_headers, github_pub_key_JSON, ACME_JSON,
                              "CTX_ACME_JSON", b64encode=False)
 
