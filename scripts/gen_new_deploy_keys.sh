@@ -14,6 +14,8 @@ ssh-keygen -t ed25519 -a 100 -f $WORKING_DIR/id_ed25519_github_deploy -q -N ""
 ssh-keygen -s $WORKING_DIR/ca_key -I github -n ubuntu,ackersond -P "$CACERT_KEY_PASS" -V +5w -z $(date +%s) $WORKING_DIR/id_ed25519_github_deploy
 CERT_INFO=`ssh-keygen -L -f $WORKING_DIR/id_ed25519_github_deploy-cert.pub`
 
+pip install $WORKING_DIR/requirements.txt
+
 # heavy lifting which updates github secrets via API
 if $WORKING_DIR/github_deploy_secrets.py ; then
     SLACK_URL=https://slack.com/api/chat.postMessage

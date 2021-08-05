@@ -40,6 +40,7 @@ jobs:
 
           # grab github.py from digitaloceans repo
           curl -o scripts/github.py https://raw.githubusercontent.com/ackersonde/digitaloceans/master/scripts/github.py
+          curl -o scripts/requirements.txt https://raw.githubusercontent.com/ackersonde/digitaloceans/master/scripts/requirements.txt
 
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
@@ -49,7 +50,7 @@ jobs:
 
           scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
           scp scripts/update_*.sh scripts/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
-          scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
+          scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
           scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
           DEPLOY_EOF
