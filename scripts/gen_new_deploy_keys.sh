@@ -7,6 +7,7 @@ else
     echo "$GITHUB_DEPLOY_KEY_FILE required. No params == no run."
     exit
 fi
+export GITHUB_SECRETS_PK_PEM=$(cat $GITHUB_SECRETS_PK_PEM_FILE)
 
 rm -f $WORKING_DIR/id_ed25519_github_deploy*
 
