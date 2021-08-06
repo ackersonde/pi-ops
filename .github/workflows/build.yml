@@ -44,7 +44,9 @@ jobs:
 
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
-          ssh -o StrictHostKeyChecking=no ubuntu@$SSH_CXN '\
+          scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
+          ssh ubuntu@$SSH_CXN '\
+            crontab /tmp/crontab.txt && \
             mkdir my-ca || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
@@ -52,7 +54,6 @@ jobs:
           scp scripts/update_*.sh scripts/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
           scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
-          scp scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 

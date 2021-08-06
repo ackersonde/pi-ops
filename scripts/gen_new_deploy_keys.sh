@@ -12,7 +12,7 @@ export GITHUB_SECRETS_PK_PEM=$(cat $GITHUB_SECRETS_PK_PEM_FILE)
 rm -f $WORKING_DIR/id_ed25519_github_deploy*
 
 ssh-keygen -t ed25519 -a 100 -f $WORKING_DIR/id_ed25519_github_deploy -q -N ""
-ssh-keygen -s $WORKING_DIR/ca_key -I github -n ubuntu,ackersond -P "$CACERT_KEY_PASS" -V +5w -z $(date +%s) $WORKING_DIR/id_ed25519_github_deploy
+ssh-keygen -s $WORKING_DIR/ca_key -I github -n ubuntu,ackersond -P "$CACERT_KEY_PASS" -V +10d -z $(date +%s) $WORKING_DIR/id_ed25519_github_deploy
 CERT_INFO=`ssh-keygen -L -f $WORKING_DIR/id_ed25519_github_deploy-cert.pub`
 
 pip install -r $WORKING_DIR/requirements.txt

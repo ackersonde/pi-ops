@@ -17,6 +17,7 @@ chmod 600 $TMP
     root@ackerson.de:/root/traefik/acme.json /home/ubuntu/traefik/acme.json
 /usr/bin/chmod 600 /home/ubuntu/traefik/acme.json
 # parse out certificates from Traefik 2.2 acme.json file
+# can be found @ https://github.com/ldez/traefik-certs-dumper
 /home/ubuntu/traefik/traefik-certs-dumper file --version v2 \
     --source /home/ubuntu/traefik/acme.json \
     --dest /home/ubuntu/traefik/dump
