@@ -47,6 +47,7 @@ jobs:
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
           ssh ubuntu@$SSH_CXN '\
             crontab /tmp/crontab.txt && \
+            sudo apt install wakeonlan && \
             mkdir my-ca || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
