@@ -13,7 +13,7 @@ WGET="wget" # add `--no-check-certificate` if/when you've missed the expiration
 TMP="$(mktemp -t XXXXXX)"
 chmod 600 $TMP
 
-/usr/bin/scp -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa_digitalocean \
+/usr/bin/scp -o StrictHostKeyChecking=no -i /home/ubuntu/my-ca/id_ed25519_github_deploy \
     root@ackerson.de:/root/traefik/acme.json /home/ubuntu/traefik/acme.json
 /usr/bin/chmod 600 /home/ubuntu/traefik/acme.json
 # parse out certificates from Traefik 2.2 acme.json file
