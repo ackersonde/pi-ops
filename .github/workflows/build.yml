@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
-      LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+      FS_CXN: ${{ secrets.CTX_IPV6_SLAVE_HOME }}
+      LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/consul-vault-backup.log"
       CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
       CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
     steps:
@@ -48,13 +49,19 @@ jobs:
           ssh ubuntu@$SSH_CXN '\
             crontab /tmp/crontab.txt && \
             sudo apt install wakeonlan && \
-            mkdir my-ca || true && \
+            mkdir my-ca consul-vault-swarm || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
+
+          scp -o StrictHostKeyChecking=no scripts/consul_vault.conf ubuntu@[$FS_CXN]:/tmp/
+          ssh ubuntu@$FS_CXN '\
+            sudo mv /tmp/consul_vault.conf /etc/logrotate.d/ &&
+            mkdir -p /mnt/usb4TB/backups/consul-vault-secrets || true'
 
           scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
           scp scripts/update_*.sh scripts/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
           scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
+          scp scripts/consul_backup_restore.sh scripts/docker-compose.yml ubuntu@[$SSH_CXN]:~/consul-vault-swarm/
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 

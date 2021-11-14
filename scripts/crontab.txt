@@ -1,3 +1,4 @@
 # m h  dom mon dow   command
 52 21 * * Fri /home/ubuntu/my-ca/gen_new_deploy_keys.sh > /var/log/gen_new_deploy_keys.log 2>&1
 05 19 28 * * /home/ubuntu/traefik/fritz-cert-upload.sh > /var/log/fritz-cert-upload.log 2>&1
+55 20 * * * /home/ubuntu/consul-vault-swarm/consul_backup_restore.sh backup > /var/log/consul-vault-backup.log 2>&1
