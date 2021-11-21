@@ -20,6 +20,7 @@ else
       VAULT_SEALED=`curl -s http://pi4:8200/v1/sys/seal-status | jq '.sealed'`
       if ! $VAULT_SEALED; then echo "Vault not sealed. Aborting..." && exit 2; fi
       echo "Going to restore now..."
+      scp 192.168.178.28:/mnt/usb4TB/backups/consul-vault-secrets/$2 .
       docker cp $2 $CONSUL_SERVER:backup.snap
       docker exec -it $CONSUL_SERVER consul snapshot restore backup.snap
     else
