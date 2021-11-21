@@ -19,12 +19,15 @@ else
     then
       VAULT_SEALED=`curl -s http://pi4:8200/v1/sys/seal-status | jq '.sealed'`
       if ! $VAULT_SEALED; then echo "Vault not sealed. Aborting..." && exit 2; fi
-      echo "Going to restore now..."
-      scp 192.168.178.28:/mnt/usb4TB/backups/consul-vault-secrets/$2 .
-      docker cp $2 $CONSUL_SERVER:backup.snap
+
+      FILE=${2/$BACKUP_DIR/} # if restore file contains backup path, remove it (copy/pasta)
+      echo "Going to restore $FILE now..."
+      scp $BACKUP_HOST:$BACKUP_DIR/$FILE .
+      docker cp $FILE $CONSUL_SERVER:backup.snap
       docker exec -it $CONSUL_SERVER consul snapshot restore backup.snap
+      rm $FILE
     else
-      echo "Please provide backup file to restoration cmd"
-      exit 1
+      echo "Last 10 backups >15KB in size on vpnpi:"
+      ssh $BACKUP_HOST "find $BACKUP_DIR -type f -size +15k -printf '%T@ %p\n' -ls | sort -n | cut -d' ' -f 2 | tail -n 10 | xargs -r ls -l"
     fi
 fi
