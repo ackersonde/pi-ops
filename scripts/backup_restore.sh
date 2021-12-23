@@ -18,8 +18,9 @@ else
       sudo rm -Rf $VAULT_HOME || true
 
       # remote graceful shutdown and data sync to local disk
-      ssh -o StrictHostKeyChecking=no ackerson.de docker stop vault
+      ssh -o StrictHostKeyChecking=no ackerson.de "docker stop vault"
       rsync -Pav ackerson.de:$MNT_PATH . --delete
+      ssh ackerson.de "umount /mnt/vault_data"
 
       tar -czf backup-vault_data-$DATE.tgz -C $VAULT_HOME .
       scp backup-vault_data-$DATE.tgz $BACKUP_HOST:$BACKUP_HOME
