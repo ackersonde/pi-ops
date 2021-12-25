@@ -9,6 +9,9 @@ else
 fi
 export GITHUB_SECRETS_PK_PEM=$(cat $GITHUB_SECRETS_PK_PEM_FILE)
 
+ # shutdown and backup Vault offsite
+ ./vault/backup_restore.sh backup
+
 rm -f $WORKING_DIR/id_ed25519_github_deploy*
 
 ssh-keygen -t ed25519 -a 100 -f $WORKING_DIR/id_ed25519_github_deploy -q -N ""
