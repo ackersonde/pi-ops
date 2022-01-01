@@ -1,6 +1,6 @@
 #!/bin/bash
 DATE=`date +"%Y.%m.%d.%Hh%Mm%Ss"`
-VAULT_HOME=/home/ubuntu/vault/vault_data
+VAULT_DATA=/home/ubuntu/vault/vault_data
 BACKUP_HOST=192.168.178.28
 BACKUP_HOME=/mnt/usb4TB/backups/vault-secrets/
 MNT_PATH=/mnt/vault_data
@@ -15,15 +15,15 @@ else
       echo "Going to backup now..."
       # local cleanup
       docker rm -f vault || true
-      sudo rm -Rf $VAULT_HOME || true
-      mkdir -p $VAULT_HOME
+      sudo rm -Rf $VAULT_DATA || true
+      mkdir -p $VAULT_DATA
 
       # remote graceful shutdown and data sync to local disk
       ssh -o StrictHostKeyChecking=no ackerson.de "docker stop vault"
-      rsync -Pav ackerson.de:$MNT_PATH $VAULT_HOME --delete
+      rsync -Pav ackerson.de:$MNT_PATH/* $VAULT_DATA --delete
       ssh ackerson.de "umount $MNT_PATH"
 
-      tar -czf backup-vault_data-$DATE.tgz -C $VAULT_HOME .
+      tar -czf backup-vault_data-$DATE.tgz -C $VAULT_DATA .
       scp backup-vault_data-$DATE.tgz $BACKUP_HOST:$BACKUP_HOME
       rm backup-vault_data-$DATE.tgz
     elif [[ $2 ]]
