@@ -21,7 +21,7 @@ CERT_INFO=`ssh-keygen -L -f $WORKING_DIR/id_ed25519_github_deploy-cert.pub`
 pip install -r $WORKING_DIR/requirements.txt
 
 # redeploys DigitalOcean infra with new keys and updates github secrets
-if $WORKING_DIR/github_deploy_secrets.py ; then
+if $WORKING_DIR/github_update_secrets.py ; then
     SLACK_URL=https://slack.com/api/chat.postMessage
     curl -s -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 \
         -d text="$HOSTNAME just updated the SSH deploy key & cert in Org Secrets:" $SLACK_URL
