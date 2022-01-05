@@ -1,0 +1,4 @@
+.env
+.venv
+scripts/__pycache__
+scripts/github_pk.pem

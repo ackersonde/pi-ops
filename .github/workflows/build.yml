@@ -41,10 +41,6 @@ jobs:
           echo "${{ secrets.CA_KEY }}" > scripts/ca_key
           chmod 600 scripts/ca_key
 
-          # grab github.py from digitaloceans repo
-          curl -o scripts/github.py https://raw.githubusercontent.com/ackersonde/digitaloceans/master/scripts/github.py
-          curl -o scripts/requirements.txt https://raw.githubusercontent.com/ackersonde/digitaloceans/master/scripts/requirements.txt
-
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
