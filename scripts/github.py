@@ -25,16 +25,18 @@ def get_updated_secrets_metadata():
     github_secrets = {}
     token_headers = fetch_token_headers()
 
-    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
+    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets?per_page=100'
     try:
       r = requests.get(secrets_url, headers=token_headers)
       r.raise_for_status()
 
-      github_secrets = r.json()
+      j = r.json()
+      for secret in j['secrets']:
+        github_secrets[secret['name']] = secret['updated_at']
     except HTTPError as http_err:
-      fatal(f'HTTP error occurred during secret update: {http_err}')
+      fatal(f'HTTP error occurred while fetching metadata: {http_err}')
     except Exception as err:
-      fatal(f'Other error occurred during secret update: {err}')
+      fatal(f'Other error occurred while fetching metadata: {err}')
 
     return github_secrets
 
@@ -73,10 +75,6 @@ def update_secret(token_headers: dict, github_JSON: dict, args: SimpleNamespace)
     if b64encode and not secret_name.endswith("_B64"):
         secret_name += "_B64"
 
-    # atm, this script only supports Org secrets which I prefix with CTX_
-    if not secret_name.startswith("CTX_"):
-        secret_name = "CTX_" + secret_name
-
     payload = ""
     if args.filepath:
       file = Path(args.filepath)
@@ -102,8 +100,6 @@ def update_secret(token_headers: dict, github_JSON: dict, args: SimpleNamespace)
               "visibility": "all"},
         headers=token_headers)
       r.raise_for_status()
-
-      print("Updated " + secret_name)
     except HTTPError as http_err:
       fatal(f'HTTP error occurred during secret update: {http_err}')
     except Exception as err:
