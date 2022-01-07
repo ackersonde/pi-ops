@@ -29,8 +29,9 @@ jobs:
           sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
           sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
+          export GITHUB_INSTALL_ID=$(echo ${{ secrets.CTX_GITHUB_INSTALL_ID }} | base64 -d)
           sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@${{ secrets.CTX_GITHUB_APP_CLIENT_ID }}@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@$GITHUB_INSTALL_ID@" scripts/github_deploy_params
           sed -i -e "s@{{GIT_INSTALL_ID}}@${{ secrets.CTX_GITHUB_INSTALL_ID }}@" scripts/github_deploy_params
           sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}@" scripts/github_deploy_params
           sed -i -e "s@{{CTX_SLACK_NOTIFICATIONS_TOKEN}}@${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }}@" scripts/github_deploy_params
