@@ -71,10 +71,6 @@ def update_secret(token_headers: dict, github_JSON: dict, args: SimpleNamespace)
     secret_name = args.name
     b64encode = args.base64
 
-    # call out B64 encoded secrets in string name
-    if b64encode and not secret_name.endswith("_B64"):
-        secret_name += "_B64"
-
     payload = ""
     if args.filepath:
       file = Path(args.filepath)

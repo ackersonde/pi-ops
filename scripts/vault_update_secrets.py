@@ -110,6 +110,7 @@ def update_github_secrets(vault_secrets, github_secrets, auth, headers, read_tok
     # update the secrets which are out of sync on github
     for secret_name in vault_secrets.keys():
         slack_update = ""
+
         if secret_name in github_secrets:
             github_updated_at = github_secrets[secret_name].replace("Z", "+00:00")
             github_update_time = datetime.fromisoformat(github_updated_at)
@@ -122,24 +123,45 @@ def update_github_secrets(vault_secrets, github_secrets, auth, headers, read_tok
             if github_update_time < vault_update_time:
                 secret = get_secret_value(auth, headers, read_token, secret_name)
                 for secret_name, value in secret.items():
-                    json_args = SimpleNamespace(name=secret_name, base64=False, value=value, filepath='')
+                    json_args = SimpleNamespace(name=secret_name, base64=True, value=value, filepath='')
                     github.update_secret(token_headers, github_public_key, json_args)
-                    slack_update = f'Updated github w/ {secret_name}'
+                    slack_update = f'Updated github w/ *{secret_name}*.'
         else:
             secret = get_secret_value(auth, headers, read_token, secret_name)
             for secret_name, value in secret.items():
-                json_args = SimpleNamespace(name=secret_name, base64=False, value=value, filepath='')
+                json_args = SimpleNamespace(name=secret_name, base64=True, value=value, filepath='')
                 github.update_secret(token_headers, github_public_key, json_args)
-                slack_update = f'Created {secret_name} @ github'
+                slack_update = f'Created *{secret_name}* @ github.'
 
         if slack_update:
-            update_slack(slack_update)
+            update_slack(slack_update, secret_name)
 
-def update_slack(slack_update):
+def update_slack(slack_update, secret_name):
     exception_method = "update_slack():"
+    impacted_repo_links = ""
+
     try:
-        # hit up slackbot w/ this update
+        headers = {}
+        url = f'https://api.github.com/search/code?q=org%3Aackersonde+{secret_name}&type=Code'
+        headers['Accept'] = "application/vnd.github.v3+json"
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+
+        j = r.json()
+        for repository in j['items']:
+            impacted_repo_links += f"<{repository['repository']['html_url']} | {repository['repository']['name']}>, "
+
+        if impacted_repo_links:
+            impacted_repo_links = " Following repos are effected and should be redeployed: " + impacted_repo_links.removesuffix(", ")
+            slack_update += impacted_repo_links
+
         print(slack_update)
+        r = requests.post('https://slack.com/api/chat.postMessage', {
+            'token': os.environ['SLACK_API_TOKEN'],
+            'channel': 'C092UE0H4',
+            'text': slack_update
+            })
+        r.raise_for_status()
     except json.decoder.JSONDecodeError as json_err:
         print(exception_method + f'JSON parsing error occurred: {json_err}')
     except requests.exceptions.HTTPError as http_err:
