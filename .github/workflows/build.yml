@@ -26,8 +26,8 @@ jobs:
           go build do.go
           cd ../
 
-          sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritz-cert-upload.sh
-          sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
+          sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritzbox/fritz-cert-upload.sh
+          sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritzbox/fritz-cert-upload.sh
 
           export GITHUB_INSTALL_ID=$(echo ${{ secrets.CTX_GITHUB_INSTALL_ID }} | base64 -d)
           sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
@@ -51,16 +51,16 @@ jobs:
             mkdir my-ca vault || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
-          scp -o StrictHostKeyChecking=no scripts/logrotate_vault.conf ubuntu@[$FS_CXN]:/tmp/
+          scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$FS_CXN]:/tmp/
           ssh ubuntu@$FS_CXN '\
             sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ &&
             mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
 
-          scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
-          scp scripts/update_*.sh scripts/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
+          scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
+          scp scripts/fritzbox/fritzBoxShell* ubuntu@[$SSH_CXN]:~/
           scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
-          scp scripts/test_vault_data.sh scripts/backup_restore.sh ubuntu@[$SSH_CXN]:~/vault/
+          scp scripts/secrets/test_vault_data.sh scripts/secrets/backup_restore.sh ubuntu@[$SSH_CXN]:~/vault/
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 

@@ -1,4 +1,4 @@
-.env
-.venv
-scripts/__pycache__
-scripts/github_pk.pem
+scripts/secrets/.env
+scripts/secrets/.venv
+scripts/secrets/__pycache__
+scripts/secrets/github_pk.pem
