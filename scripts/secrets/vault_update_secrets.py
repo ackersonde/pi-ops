@@ -45,6 +45,7 @@ def get_vault_token(auth, headers, readonly=True):
 
     return token
 
+
 def get_updated_secrets_metadata(auth, headers, token):
     exception_method = "get_updated_secrets(): "
     vault_secrets = {}
@@ -78,6 +79,7 @@ def get_updated_secrets_metadata(auth, headers, token):
 
     return vault_secrets
 
+
 def main():
     auth = requests.auth.HTTPBasicAuth(BASICAUTH_USER, BASICAUTH_PASS)
 
@@ -91,17 +93,18 @@ def main():
 
     if read_token:
         vault_secrets = get_updated_secrets_metadata(auth, headers, read_token)
-        #print(vault_secrets)
+        # print(vault_secrets)
 
-        #print('=================================================================')
+        # print('=================================================================')
 
         # fetch the last updated time of the secrets on github
         github_secrets = github.get_updated_secrets_metadata()
-        #print(len(github_secrets))
+        # print(len(github_secrets))
 
         update_github_secrets(vault_secrets, github_secrets, auth, headers, read_token)
     else:
-      print("Unable to get Vault token - cowardly refusing to fetch updated secrets...")
+        print("Unable to get Vault token - cowardly refusing to fetch updated secrets...")
+
 
 def update_github_secrets(vault_secrets, github_secrets, auth, headers, read_token):
     token_headers = github.fetch_token_headers()
@@ -136,6 +139,7 @@ def update_github_secrets(vault_secrets, github_secrets, auth, headers, read_tok
         if slack_update:
             update_slack(slack_update, secret_name)
 
+
 def update_slack(slack_update, secret_name):
     exception_method = "update_slack():"
     impacted_repo_links = ""
@@ -169,6 +173,7 @@ def update_slack(slack_update, secret_name):
     except Exception as err:
         print(exception_method + f'Other error occurred: {err}')  # Python 3.6
 
+
 def get_secret_value(auth, headers, token, secret_name):
     exception_method = "get_secret_value(): "
     response = {}
@@ -188,6 +193,7 @@ def get_secret_value(auth, headers, token, secret_name):
         print(exception_method + f'Other error occurred: {err}')  # Python 3.6
 
     return response
+
 
 if __name__ == '__main__':
     main()

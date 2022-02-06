@@ -10,7 +10,7 @@ jobs:
     env:
       SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
       FS_CXN: ${{ secrets.CTX_IPV6_SLAVE_HOME }}
-      LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+      LOG_FILES: "/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/photoprism-backup.log /var/log/photoprism-import.log"
       CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
       CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
     steps:
