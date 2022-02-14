@@ -10,5 +10,5 @@ docker run -d --cap-add=IPC_LOCK \
   --label='traefik.http.routers.vault.middlewares=http-ratelimit@file,secHeaders@file,api_auth' \
   --label='traefik.http.routers.vault.tls.certResolver=letsencrypt' \
   --label='traefik.http.routers.vault.tls.domains=hv.ackerson.de' \
-  --label='traefik.http.routers.vault.rule=Host(\`hv.ackerson.de\`)' \
+  --label='traefik.http.routers.vault.rule=Host(`hv.ackerson.de`)' \
   --name vault vault:latest server
