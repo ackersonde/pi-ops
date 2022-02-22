@@ -29,9 +29,9 @@ jobs:
           sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_ROUTER_USER }}@" scripts/fritzbox/fritz-cert-upload.sh
           sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritzbox/fritz-cert-upload.sh
 
-          sed -i -e "s@{{CTX_FRITZ_BOX_HOST}}@${{ secrets.CTX_FRITZ_BOX_HOST }}@" scripts/fritzbox/fritzShellConfig.sh
-          sed -i -e "s@{{CTX_FRITZ_BOX_USER}}@${{ secrets.CTX_FRITZ_BOX_USER }}@" scripts/fritzbox/fritzShellConfig.sh
-          sed -i -e "s@{{CTX_FRITZ_BOX_PASS}}@${{ secrets.CTX_FRITZ_BOX_PASS }}@" scripts/fritzbox/fritzShellConfig.sh
+          sed -i -e "s@{{CTX_FRITZ_BOX_HOST}}@${{ secrets.CTX_FRITZ_BOX_HOST }}@" scripts/fritzbox/fritzBoxShellConfig.sh
+          sed -i -e "s@{{CTX_FRITZ_BOX_USER}}@${{ secrets.CTX_FRITZ_BOX_USER }}@" scripts/fritzbox/fritzBoxShellConfig.sh
+          sed -i -e "s@{{CTX_FRITZ_BOX_PASS}}@${{ secrets.CTX_FRITZ_BOX_PASS }}@" scripts/fritzbox/fritzBoxShellConfig.sh
 
           export GITHUB_INSTALL_ID=$(echo ${{ secrets.CTX_GITHUB_INSTALL_ID }} | base64 -d)
           sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
