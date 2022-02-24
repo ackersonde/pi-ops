@@ -1,40 +1,32 @@
 #!/bin/bash
+source ~/.ssh/github_deploy_params
+
 DOMAIN=ackerson.de
-IPV4_RECORD_ID=23738257
-IPV6_RECORD_ID=23738236
+PREFIX=`./fritzBoxShell.sh IGDIP STATE | grep NewIPv6Prefix | awk '{print $2}'`
 
-# Environment sane?
-CREDS_FILE=~/.ssh/do_token
-if [ -s "$CREDS_FILE" ]; then
-    source $CREDS_FILE
-else
-    echo "$DO_TOKEN required in $CREDS_FILE. Cowardly refusing to act..."
-    exit
-fi
-if [ ! -f "/usr/bin/jq" ]; then
-    echo "jq required to parse data from DNS API. Please install..."
-    exit
-fi
+declare -A domains
+domains["145482150"]="ubuntu@{{CTX_IPV6_MASTER_HOME}}"
+domains["145483151"]="ubuntu@{{CTX_IPV6_SLAVE_HOME}}"
+domains["145482932"]="ackersond@{{CTX_IPV6_BUILD_HOME}}"
 
-CURRENT_TIMESTAMP="$(date +%F) $(date +%T) -"
+for IPV6_RECORD_ID in "${!domains[@]}"
+do
+    local_ip=`ssh ${domains[$IPV6_RECORD_ID]} curl --silent https://ipv6.icanhazip.com/ | xargs echo -n`
+    domain=`echo ${domains[$IPV6_RECORD_ID]} | awk -F '@' '{print $2}'`
+    dns_look=`dig +short AAAA $domain`
 
-# IPv6
-ipv6_current=`curl --silent https://ipv6.icanhazip.com/ | xargs echo -n`
-ipv6_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
-"https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID" | jq -r '.[] | .data'`
+    # first check if local IP matches DNS record
+    if [[ "$local_ip" != "$dns_look" ]]; then
+        # if not, check if IPv6 prefix has changed
+        if [[ ! $local_ip =~ ^"${PREFIX::-1}".* ]]; then
+            echo "UPDATE ${domains[$IPV6_RECORD_ID]} to $local_ip !"
+            # curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
+            #    -d "{\"data\":\"$local_ip\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID"
 
-if [ "$ipv6_current" != "$ipv6_dns" ]; then
-    echo -e "\n$CURRENT_TIMESTAMP IPv6 would update from $ipv6_dns TO $ipv6_current"
-#    curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
-#    -d "{\"data\":\"$ipv6_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID"
-fi
-
-# IPv4
-ipv4_current=`curl --silent https://ipv4.icanhazip.com/ | xargs echo -n`
-ipv4_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
-"https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID" | jq -r '.[] | .data'`
-if [ "$ipv4_current" != "$ipv4_dns" ]; then
-    echo -e "\n$CURRENT_TIMESTAMP IPv4 would update from $ipv4_dns TO $ipv4_current"
-#    curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
-#    -d "{\"data\":\"$ipv4_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID"
-fi
+            # send Slack update msg
+            curl -s -o /dev/null -X POST -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 \
+             -d text="Please update $domain from $dns_look to $local_ip @ <https://cloud.digitalocean.com/networking/domains/$DOMAIN|DigitalOcean>" \
+             https://slack.com/api/chat.postMessage
+        fi
+    fi
+done
