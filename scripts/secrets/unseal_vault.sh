@@ -9,7 +9,7 @@ fi
 echo "Checking if $HOST is sealed..."
 if [[ -f $FILE && -f /usr/bin/jq ]]; then
     sealed=$(curl -s -n "$HOST/v1/sys/seal-status" | jq .sealed)
-    if [[ $sealed != true ]]; then
+    if [[ $sealed == true ]]; then
       curl -s -n -X POST --data @/home/ubuntu/.unsealKey1 $HOST/v1/sys/unseal
       curl -s -n -X POST --data @/home/ubuntu/.unsealKey2 $HOST/v1/sys/unseal
     fi
