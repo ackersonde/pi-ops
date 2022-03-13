@@ -56,7 +56,7 @@ jobs:
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
           ssh ubuntu@$SSH_CXN '\
             crontab /tmp/crontab.txt && \
-            sudo apt install wakeonlan nmap && \
+            sudo apt-get install wakeonlan nmap && \
             mkdir my-ca vault || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
@@ -67,9 +67,9 @@ jobs:
 
           scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
           scp scripts/fritzbox/fritzBoxShell* scripts/fritzbox/update_domain_records.sh ubuntu@[$SSH_CXN]:~/
-          scp scripts/gen_new_deploy_keys.sh scripts/*.py scripts/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
+          scp scripts/gen_new_deploy_keys.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
           scp scripts/github_deploy_params ubuntu@[$SSH_CXN]:~/.ssh/
-          scp scripts/secrets/test_vault_data.sh scripts/unseal_vault.sh scripts/secrets/backup_restore.sh ubuntu@[$SSH_CXN]:~/vault/
+          scp scripts/secrets/*.sh ubuntu@[$SSH_CXN]:~/vault/
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 
