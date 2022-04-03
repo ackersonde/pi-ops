@@ -22,13 +22,13 @@ def get_vault_token(auth, headers, readonly=True):
     exception_method = "get_vault_token(): "
     vault_user = VAULT_READ_USER
     vault_pass = VAULT_READ_PASS
-
+    token = ""
     if not readonly:
         vault_user = VAULT_WRITE_USER
         vault_pass = VAULT_WRITE_PASS
 
     try:
-        url = VAULT_API_ENDPOINT + '/v1/auth/userpass/login/' + vault_user
+        url = VAULT_API_ENDPOINT + '/v1/auth/robots/login/' + vault_user
         data = '{"password": "' + vault_pass + '", "ttl": "1h" }'
 
         r = requests.post(url, auth=auth, headers=headers, data=data)
