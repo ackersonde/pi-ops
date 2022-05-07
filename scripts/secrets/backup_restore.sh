@@ -18,13 +18,15 @@ else
       sudo rm -Rf $VAULT_DATA || true
       mkdir -p $VAULT_DATA
 
-      docker stop vault || true
-      rsync -Pav vault:$MNT_PATH/* $VAULT_DATA --delete
-
+      # backup from remote and secondary backup
+      rsync -Pav vault:$MNT_PATH/* $VAULT_DATA
       tar -czf backup-vault_data-$DATE.tgz -C $VAULT_DATA .
       scp backup-vault_data-$DATE.tgz $BACKUP_HOST:$BACKUP_HOME
       rm backup-vault_data-$DATE.tgz
-      docker start vault || true
+
+      # launch local dev env
+      /home/ubuntu/vault/test_vault_data.sh
+      /home/ubuntu/vault/unseal_vault.sh http://localhost:8200
     elif [[ $2 ]]
     then
       FILE=${2/$BACKUP_DIR/} # if restore file contains backup path, remove it (copy/pasta)
