@@ -12,8 +12,8 @@ domains["145482932"]="ackersond@{{CTX_IPV6_BUILD_HOME}}"
 for IPV6_RECORD_ID in "${!domains[@]}"
 do
     local_ip=`ssh ${domains[$IPV6_RECORD_ID]} curl --silent https://ipv6.icanhazip.com/ | xargs echo -n`
-    dns_look=`dig +short AAAA $domain`
     domain=`echo ${domains[$IPV6_RECORD_ID]} | awk -F '@' '{print $2}'`
+    dns_look=`dig +short AAAA $domain`
 
     echo "$domain - iCAN: $local_ip  DIG: $dns_look"
 
