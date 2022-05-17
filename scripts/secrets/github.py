@@ -12,47 +12,53 @@ import os
 import requests
 import sys
 
-GITHUB_APP_CLIENT_ID = os.environ['GITHUB_APP_CLIENT_ID']
-GITHUB_INSTALL_ID = os.environ['GITHUB_INSTALL_ID']
-GITHUB_SECRETS_PK_PEM = os.environ['GITHUB_SECRETS_PK_PEM']
+GITHUB_APP_CLIENT_ID = os.environ["GITHUB_APP_CLIENT_ID"]
+GITHUB_INSTALL_ID = os.environ["GITHUB_INSTALL_ID"]
+GITHUB_SECRETS_PK_PEM = os.environ["GITHUB_SECRETS_PK_PEM"]
 
 
 def fatal(message):
-    print('Error: {}'.format(message), file=sys.stderr)
+    print("Error: {}".format(message), file=sys.stderr)
     sys.exit(1)
+
 
 def get_updated_secrets_metadata():
     github_secrets = {}
     token_headers = fetch_token_headers()
 
-    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets?per_page=100'
+    secrets_url = "https://api.github.com/orgs/ackersonde/actions/secrets?per_page=100"
     try:
-      r = requests.get(secrets_url, headers=token_headers)
-      r.raise_for_status()
+        r = requests.get(secrets_url, headers=token_headers)
+        r.raise_for_status()
 
-      j = r.json()
-      for secret in j['secrets']:
-        github_secrets[secret['name']] = secret['updated_at']
+        j = r.json()
+        for secret in j["secrets"]:
+            github_secrets[secret["name"]] = secret["updated_at"]
     except HTTPError as http_err:
-      fatal(f'HTTP error occurred while fetching metadata: {http_err}')
+        fatal(f"HTTP error occurred while fetching metadata: {http_err}")
     except Exception as err:
-      fatal(f'Other error occurred while fetching metadata: {err}')
+        fatal(f"Other error occurred while fetching metadata: {err}")
 
     return github_secrets
 
+
 # Token Exchange requires a JWT in the Auth Bearer header with this format
 def generate_id_token(iss, expire_seconds=600):
-    #raw_pem_key = open(GITHUB_SECRETS_PK_PEM_FILE, "r").read()
-    signing_key = serialization.load_pem_private_key(GITHUB_SECRETS_PK_PEM.encode(), password=None)
+    # raw_pem_key = open(GITHUB_SECRETS_PK_PEM_FILE, "r").read()
+    signing_key = serialization.load_pem_private_key(
+        GITHUB_SECRETS_PK_PEM.encode(), password=None
+    )
 
     token = jwt.encode(
-        {'iss': iss, 'iat': int(time()), 'exp': int(time()) + expire_seconds},
-        signing_key, algorithm='RS256')
+        {"iss": iss, "iat": int(time()), "exp": int(time()) + expire_seconds},
+        signing_key,
+        algorithm="RS256",
+    )
 
     key = RSA.import_key(GITHUB_SECRETS_PK_PEM)
-    decoded = jwt.decode(token, key.public_key().export_key(), algorithms=['RS256'])
-    if decoded['iss'] != iss:
-        raise ValueError('Invalid token')
+    decoded = jwt.decode(token, key.public_key().export_key(), algorithms=["RS256"])
+    if decoded["iss"] != iss:
+        raise ValueError("Invalid token")
 
     return token
 
@@ -73,50 +79,59 @@ def update_secret(token_headers: dict, github_JSON: dict, args: SimpleNamespace)
 
     payload = ""
     if args.filepath:
-      file = Path(args.filepath)
-      if b64encode:
-        base64_bytes = base64.b64encode(file.read_bytes())
-        payload = base64_bytes.decode("utf-8")
-      else:
-        payload = file.read_text()
+        file = Path(args.filepath)
+        if b64encode:
+            base64_bytes = base64.b64encode(file.read_bytes())
+            payload = base64_bytes.decode("utf-8")
+        else:
+            payload = file.read_text()
     else:
-      payload = args.value
-      if b64encode:
-        base64_bytes = base64.b64encode(bytes(payload, "utf-8"))
-        payload = base64_bytes.decode("utf-8")
+        payload = args.value
+        if b64encode:
+            base64_bytes = base64.b64encode(bytes(payload, "utf-8"))
+            payload = base64_bytes.decode("utf-8")
 
-    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
-    encrypted_value = encrypt(github_JSON['key'], payload)
+    secrets_url = "https://api.github.com/orgs/ackersonde/actions/secrets"
+    encrypted_value = encrypt(github_JSON["key"], payload)
 
     try:
-      r = requests.put(
-        f'{secrets_url}/{secret_name}',
-        json={"encrypted_value": f"{encrypted_value}",
-              "key_id": f"{github_JSON['key_id']}",
-              "visibility": "all"},
-        headers=token_headers)
-      r.raise_for_status()
+        r = requests.put(
+            f"{secrets_url}/{secret_name}",
+            json={
+                "encrypted_value": f"{encrypted_value}",
+                "key_id": f"{github_JSON['key_id']}",
+                "visibility": "all",
+            },
+            headers=token_headers,
+        )
+        r.raise_for_status()
     except HTTPError as http_err:
-      fatal(f'HTTP error occurred during secret update: {http_err}')
+        fatal(f"HTTP error occurred during secret update: {http_err}")
     except Exception as err:
-      fatal(f'Other error occurred during secret update: {err}')
+        fatal(f"Other error occurred during secret update: {err}")
+
 
 def fetch_token_headers():
     id_token = generate_id_token(iss=GITHUB_APP_CLIENT_ID)
 
-    url = f'https://api.github.com/app/installations/{GITHUB_INSTALL_ID}/access_tokens'
-    auth_headers = {'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': f'Bearer {id_token}'}
+    url = f"https://api.github.com/app/installations/{GITHUB_INSTALL_ID}/access_tokens"
+    auth_headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": f"Bearer {id_token}",
+    }
     resp = requests.post(url, headers=auth_headers)
     resp.raise_for_status()
     output = resp.json()
 
-    token = output['token']
-    return {'Accept': 'application/vnd.github.v3+json',
-            'Authorization': f'token {token}'}
+    token = output["token"]
+    return {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": f"token {token}",
+    }
+
 
 def fetch_public_key(token_headers: str):
-    url = 'https://api.github.com/orgs/ackersonde/actions/secrets/public-key'
+    url = "https://api.github.com/orgs/ackersonde/actions/secrets/public-key"
 
     resp = requests.get(url, headers=token_headers)
     resp.raise_for_status()
