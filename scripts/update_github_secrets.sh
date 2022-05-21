@@ -7,6 +7,7 @@ else
     echo "$VAULT_UPDATE_GITHUB_FILE required. No params == no run."
     exit
 fi
+GITHUB_DEPLOY_KEY_FILE=~/.ssh/github_deploy_params
 if [ -s "$GITHUB_DEPLOY_KEY_FILE" ]; then
     source $GITHUB_DEPLOY_KEY_FILE
 else
