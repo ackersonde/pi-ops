@@ -5,3 +5,4 @@
 12 06 * * * /home/ubuntu/update_domain_records.sh > /var/log/update_domain_records.log 2>&1
 23 23 * * * /home/ubuntu/photoprism/backup_photos.sh > /var/log/photoprism-backup.log 2>&1
 40 * * * * /home/ubuntu/photoprism/import_photos.sh > /var/log/photoprism-import.log 2>&1
+32 * * * * /home/ubuntu/my-ca/update_github_secrets.sh > /var/log/update_github_secrets.log 2>&1

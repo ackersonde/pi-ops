@@ -11,10 +11,8 @@ import requests
 VAULT_API_ENDPOINT = os.environ["VAULT_API_ENDPOINT"]
 VAULT_READ_APPROLE_ID = os.environ["VAULT_READ_APPROLE_ID"]
 VAULT_READ_SECRET_ID = os.environ["VAULT_READ_SECRET_ID"]
-VAULT_READ_TOKEN = os.environ["VAULT_READ_TOKEN"]
 VAULT_WRITE_APPROLE_ID = os.environ["VAULT_WRITE_APPROLE_ID"]
 VAULT_WRITE_SECRET_ID = os.environ["VAULT_WRITE_SECRET_ID"]
-VAULT_WRITE_TOKEN = os.environ["VAULT_WRITE_TOKEN"]
 
 
 # https://hvac.readthedocs.io/en/stable/usage/auth_methods/approle.html
@@ -69,10 +67,8 @@ def get_updated_secrets_metadata(client):
 
 
 def main():
-    read_token = VAULT_READ_TOKEN
-    if read_token == "":
-        read_token = get_vault_token()
-        # print(f"READ1: {read_token}"
+    read_token = get_vault_token()
+    print(f"READ1: {read_token}")
 
     if read_token:
         client = hvac.Client(url=VAULT_API_ENDPOINT, token=read_token)
