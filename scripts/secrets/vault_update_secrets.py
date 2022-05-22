@@ -154,12 +154,12 @@ def notify_slack(updates):
                     repository["repository"]["name"]
                 ] = f"<{repository['repository']['html_url']}|{repository['repository']['name']}>"
                 affected_repos = (
-                    " Following repos are effected and should be redeployed: "
+                    " Following repos are affected and should be redeployed: "
                 )
 
             for _, link in impacted_repo_links.items():
                 affected_repos += link + ", "
-            affected_repos.removesuffix(", ")
+            affected_repos.removesuffix(",")
 
             slack_update += update_text + affected_repos + "\n"
 
