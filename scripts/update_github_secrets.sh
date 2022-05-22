@@ -15,4 +15,4 @@ else
     exit
 fi
 
-$WORKING_DIR/update_github_secrets.py
+$WORKING_DIR/vault_update_secrets.py
