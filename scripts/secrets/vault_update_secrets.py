@@ -159,7 +159,7 @@ def notify_slack(updates):
 
             for _, link in impacted_repo_links.items():
                 affected_repos += link + ", "
-            affected_repos.removesuffix(",")
+            affected_repos = affected_repos.removesuffix(", ")
 
             slack_update += update_text + affected_repos + "\n"
 
