@@ -32,8 +32,6 @@ def get_vault_token(readonly=True) -> str:
             role_id=vault_role,
             secret_id=vault_secret,
         )
-        # res = client.is_authenticated()
-        print("res1:", r)
         token = r["auth"]["client_token"]
     except requests.exceptions.HTTPError as http_err:
         print(exception_method + f"HTTP error occurred: {http_err}")  # Python 3.6
@@ -69,7 +67,6 @@ def get_updated_secrets_metadata(client):
 
 def main():
     read_token = get_vault_token()
-    print(f"READ1: {read_token}")
 
     if read_token:
         client = hvac.Client(url=VAULT_API_ENDPOINT, token=read_token)
@@ -127,7 +124,7 @@ def update_github_secrets(vault_secrets, github_secrets, client):
                 github.update_secret(token_headers, github_public_key, json_args)
                 slack_update = f"Created *{secret_name}* @ github (added to Vault on {vault_update_time})."
 
-        if slack_update:
+        if len(slack_update) > 0:
             updates[secret_name] = slack_update
 
     if len(updates) > 0:
@@ -137,6 +134,9 @@ def update_github_secrets(vault_secrets, github_secrets, client):
 def notify_slack(updates):
     exception_method = "update_slack():"
     impacted_repo_links = {}
+    affected_repos = ""
+
+    slack_update = ""
 
     try:
         for secret_name, update_text in updates:
@@ -151,13 +151,16 @@ def notify_slack(updates):
                 impacted_repo_links[
                     repository["repository"]["name"]
                 ] = f"<{repository['repository']['html_url']}|{repository['repository']['name']}>"
-
-        if impacted_repo_links:
-            slack_update = " Following repos are effected and should be redeployed: "
+                affected_repos = (
+                    " Following repos are effected and should be redeployed: "
+                )
 
             for _, value in impacted_repo_links.items():
-                slack_update += value + ", "
+                affected_repos += value + ", "
 
+            slack_update += update_text + affected_repos + "\n"
+
+        if len(slack_update) > 0:
             r = requests.post(
                 "https://slack.com/api/chat.postMessage",
                 {
