@@ -46,11 +46,16 @@ jobs:
           sed -i -e "s@{{DO_TOKEN}}@${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}@" scripts/github_deploy_params
           chmod 600 scripts/github_deploy_params
 
-          sed -i -e "s@{{ORG_VAULT_API_ENDPOINT}}@${{ secrets.ORG_VAULT_API_ENDPOINT}}@" scripts/vault_update_github_params
-          sed -i -e "s@{{ORG_VAULT_READ_APPROLE_ID}}@${{ secrets.ORG_VAULT_READ_APPROLE_ID}}@" scripts/vault_update_github_params
-          sed -i -e "s@{{ORG_VAULT_READ_SECRET_ID}}@${{ secrets.ORG_VAULT_READ_SECRET_ID}}@" scripts/vault_update_github_params
-          sed -i -e "s@{{ORG_VAULT_WRITE_APPROLE_ID}}@${{ secrets.ORG_VAULT_WRITE_APPROLE_ID}}@" scripts/vault_update_github_params
-          sed -i -e "s@{{ORG_VAULT_WRITE_SECRET_ID}}@${{ secrets.ORG_VAULT_WRITE_SECRET_ID}}@" scripts/vault_update_github_params
+          export ORG_VAULT_API_ENDPOINT_D64=$(echo ${{ secrets.ORG_VAULT_API_ENDPOINT }} | base64 -d)
+          export ORG_VAULT_READ_APPROLE_ID_D64=$(echo ${{ secrets.ORG_VAULT_READ_APPROLE_ID }} | base64 -d)
+          export ORG_VAULT_READ_SECRET_ID_D64=$(echo ${{ secrets.ORG_VAULT_READ_SECRET_ID }} | base64 -d)
+          export ORG_VAULT_WRITE_APPROLE_ID_D64=$(echo ${{ secrets.ORG_VAULT_WRITE_APPROLE_ID }} | base64 -d)
+          export ORG_VAULT_WRITE_SECRET_ID_D64=$(echo ${{ secrets.ORG_VAULT_WRITE_SECRET_ID }} | base64 -d)
+          sed -i -e "s@{{ORG_VAULT_API_ENDPOINT}}@$ORG_VAULT_API_ENDPOINT_D64@" scripts/vault_update_github_params
+          sed -i -e "s@{{ORG_VAULT_READ_APPROLE_ID}}@$ORG_VAULT_READ_APPROLE_ID_D64@" scripts/vault_update_github_params
+          sed -i -e "s@{{ORG_VAULT_READ_SECRET_ID}}@$ORG_VAULT_READ_SECRET_ID_D64@" scripts/vault_update_github_params
+          sed -i -e "s@{{ORG_VAULT_WRITE_APPROLE_ID}}@$ORG_VAULT_WRITE_APPROLE_ID_D64@" scripts/vault_update_github_params
+          sed -i -e "s@{{ORG_VAULT_WRITE_SECRET_ID}}@$ORG_VAULT_WRITE_SECRET_ID_D64@" scripts/vault_update_github_params
           chmod 600 scripts/vault_update_github_params
 
           echo "${{ secrets.CTX_GITHUB_SECRETS_PK_PEM }}" > scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
