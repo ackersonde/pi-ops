@@ -140,7 +140,7 @@ def notify_slack(updates):
     slack_update = ""
 
     try:
-        for secret_name, update_text in updates:
+        for secret_name, update_text in updates.items():
             affected_repos = ""
             headers = {}
             url = f"https://api.github.com/search/code?q=org%3Aackersonde+{secret_name}&type=Code"
