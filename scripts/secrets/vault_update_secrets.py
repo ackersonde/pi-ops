@@ -96,6 +96,7 @@ def main():
 def update_github_secrets(vault_secrets, github_secrets, client):
     token_headers = github.fetch_token_headers()
     github_public_key = github.fetch_public_key(token_headers)
+    updates = []
 
     # update the secrets which are out of sync on github
     for secret_name in vault_secrets.keys():
@@ -124,50 +125,54 @@ def update_github_secrets(vault_secrets, github_secrets, client):
                     name=secret_name, base64=True, value=value, filepath=""
                 )
                 github.update_secret(token_headers, github_public_key, json_args)
-                slack_update = f"Created *{secret_name}* @ github (added to Vault on {vault_update_time}."
+                slack_update = f"Created *{secret_name}* @ github (added to Vault on {vault_update_time})."
 
         if slack_update:
-            notify_slack(slack_update, secret_name)
+            updates[secret_name] = slack_update
+
+    if len(updates) > 0:
+        notify_slack(updates)
 
 
-def notify_slack(slack_update, secret_name):
+def notify_slack(updates):
     exception_method = "update_slack():"
-    impacted_repo_links = ""
+    impacted_repo_links = {}
 
     try:
-        headers = {}
-        url = f"https://api.github.com/search/code?q=org%3Aackersonde+{secret_name}&type=Code"
-        headers["Accept"] = "application/vnd.github.v3+json"
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
+        for secret_name, update_text in updates:
+            headers = {}
+            url = f"https://api.github.com/search/code?q=org%3Aackersonde+{secret_name}&type=Code"
+            headers["Accept"] = "application/vnd.github.v3+json"
+            r = requests.get(url, headers=headers)
+            r.raise_for_status()
 
-        j = r.json()
-        for repository in j["items"]:
-            impacted_repo_links += f"<{repository['repository']['html_url']} | {repository['repository']['name']}>, "
+            j = r.json()
+            for repository in j["items"]:
+                impacted_repo_links[
+                    repository["repository"]["name"]
+                ] = f"<{repository['repository']['html_url']}|{repository['repository']['name']}>"
 
         if impacted_repo_links:
-            impacted_repo_links = (
-                " Following repos are effected and should be redeployed: "
-                + impacted_repo_links.removesuffix(", ")
-            )
-            slack_update += impacted_repo_links
+            slack_update = " Following repos are effected and should be redeployed: "
 
-        print(slack_update)
-        r = requests.post(
-            "https://slack.com/api/chat.postMessage",
-            {
-                "token": os.environ["SLACK_API_TOKEN"],
-                "channel": "C092UE0H4",
-                "text": slack_update,
-            },
-        )
-        r.raise_for_status()
+            for _, value in impacted_repo_links.items():
+                slack_update += value + ", "
+
+            r = requests.post(
+                "https://slack.com/api/chat.postMessage",
+                {
+                    "token": os.environ["SLACK_API_TOKEN"],
+                    "channel": "C092UE0H4",
+                    "text": slack_update,
+                },
+            )
+            r.raise_for_status()
     except json.decoder.JSONDecodeError as json_err:
         print(exception_method + f"JSON parsing error occurred: {json_err}")
     except requests.exceptions.HTTPError as http_err:
-        print(exception_method + f"HTTP error occurred: {http_err}")  # Python 3.6
+        print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(exception_method + f"Other error occurred: {err}")  # Python 3.6
+        print(exception_method + f"Other error occurred: {err}")
 
 
 def get_secret_value(client, secret_name):

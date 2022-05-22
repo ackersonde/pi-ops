@@ -14,5 +14,6 @@ else
     echo "$GITHUB_DEPLOY_KEY_FILE required. No params == no run."
     exit
 fi
+export GITHUB_SECRETS_PK_PEM=$(cat $GITHUB_SECRETS_PK_PEM_FILE)
 
 $WORKING_DIR/vault_update_secrets.py
