@@ -8,6 +8,7 @@ import os
 import json
 import re
 import requests
+import traceback
 
 VAULT_API_ENDPOINT = os.environ["VAULT_API_ENDPOINT"]
 VAULT_READ_APPROLE_ID = os.environ["VAULT_READ_APPROLE_ID"]
@@ -34,9 +35,10 @@ def get_vault_token(readonly=True) -> str:
         )
         token = r["auth"]["client_token"]
     except requests.exceptions.HTTPError as http_err:
-        print(exception_method + f"HTTP error occurred: {http_err}")  # Python 3.6
+        print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(exception_method + f"Other error occurred: {err}")  # Python 3.6
+        print(exception_method + f"Other error occurred: {err}")
+        print(traceback.format_exc())
 
     return token
 
@@ -58,9 +60,10 @@ def get_updated_secrets_metadata(client):
             )
             vault_secrets[secret_name] = r["data"]["updated_time"]
     except requests.exceptions.HTTPError as http_err:
-        print(exception_method + f"HTTP error occurred: {http_err}")  # Python 3.6
+        print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(exception_method + f"Other error occurred: {err}")  # Python 3.6
+        print(exception_method + f"Other error occurred: {err}")
+        print(traceback.format_exc())
 
     return vault_secrets
 
@@ -93,7 +96,7 @@ def main():
 def update_github_secrets(vault_secrets, github_secrets, client):
     token_headers = github.fetch_token_headers()
     github_public_key = github.fetch_public_key(token_headers)
-    updates = []
+    updates = {}
 
     # update the secrets which are out of sync on github
     for secret_name in vault_secrets.keys():
@@ -132,14 +135,13 @@ def update_github_secrets(vault_secrets, github_secrets, client):
 
 
 def notify_slack(updates):
-    exception_method = "update_slack():"
+    exception_method = "notify_slack():"
     impacted_repo_links = {}
-    affected_repos = ""
-
     slack_update = ""
 
     try:
         for secret_name, update_text in updates:
+            affected_repos = ""
             headers = {}
             url = f"https://api.github.com/search/code?q=org%3Aackersonde+{secret_name}&type=Code"
             headers["Accept"] = "application/vnd.github.v3+json"
@@ -155,8 +157,9 @@ def notify_slack(updates):
                     " Following repos are effected and should be redeployed: "
                 )
 
-            for _, value in impacted_repo_links.items():
-                affected_repos += value + ", "
+            for _, link in impacted_repo_links.items():
+                affected_repos += link + ", "
+            affected_repos.removesuffix(", ")
 
             slack_update += update_text + affected_repos + "\n"
 
@@ -176,6 +179,7 @@ def notify_slack(updates):
         print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
         print(exception_method + f"Other error occurred: {err}")
+        print(traceback.format_exc())
 
 
 def get_secret_value(client, secret_name):
@@ -190,9 +194,10 @@ def get_secret_value(client, secret_name):
         )
         response[secret_name] = r["data"]["data"][secret_name]
     except requests.exceptions.HTTPError as http_err:
-        print(exception_method + f"HTTP error occurred: {http_err}")  # Python 3.6
+        print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(exception_method + f"Other error occurred: {err}")  # Python 3.6
+        print(exception_method + f"Other error occurred: {err}")
+        print(traceback.format_exc())
 
     return response
 
