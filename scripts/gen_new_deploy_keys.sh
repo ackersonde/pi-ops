@@ -8,6 +8,13 @@ else
     exit
 fi
 export GITHUB_SECRETS_PK_PEM=$(cat $GITHUB_SECRETS_PK_PEM_FILE)
+VAULT_UPDATE_GITHUB_FILE=~/.ssh/vault_update_github_params
+if [ -s "$VAULT_UPDATE_GITHUB_FILE" ]; then
+    source $VAULT_UPDATE_GITHUB_FILE
+else
+    echo "$VAULT_UPDATE_GITHUB_FILE required. No params == no run."
+    exit
+fi
 
 # shutdown and backup Vault offsite
 ./vault/backup_restore.sh backup
