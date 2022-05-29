@@ -79,10 +79,13 @@ def write_secret(secret_name, secret_value):
 
     try:
         client = hvac.Client(url=VAULT_API_ENDPOINT, token=write_token)
+        secret = {}
+        secret[secret_name] = secret_value
         w = client.secrets.kv.v2.create_or_update_secret(
             mount_point=mount_point,
             path=secret_name,
-            secret=dict(secret_name=secret_value),
+            secret=secret
+            # secret=dict(zip((secret_name), (secret_value))),
         )
         w.raise_for_status()
     except requests.exceptions.HTTPError as http_err:
