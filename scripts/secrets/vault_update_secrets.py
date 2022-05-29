@@ -48,10 +48,10 @@ def get_vault_token(readonly=True) -> str:
 
 def update_secret(args: SimpleNamespace):
     secret_name = args.name
-    if secret_name.startswith("CTX"):
-        secret_name.replace("CTX", "ORG")
+    if secret_name.startswith("CTX_"):
+        secret_name = secret_name.replace("CTX_", "ORG_")
     if secret_name.endswith("_B64"):
-        secret_name.removesuffix("_B64")
+        secret_name = secret_name.removesuffix("_B64")
 
     # b64encode = args.base64 # not doing this in Vault
     b64encode = False
