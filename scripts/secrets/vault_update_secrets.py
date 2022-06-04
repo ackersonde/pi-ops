@@ -84,8 +84,7 @@ def write_secret(secret_name, secret_value):
         client.secrets.kv.v2.create_or_update_secret(
             mount_point=mount_point,
             path=secret_name,
-            secret=secret
-            # secret=dict(zip((secret_name), (secret_value))),
+            secret=secret,
         )
     except requests.exceptions.HTTPError as http_err:
         print(exception_method + f"HTTP error occurred: {http_err}")
@@ -101,13 +100,16 @@ def get_updated_secrets_metadata(client):
     try:
         # https://hvac.readthedocs.io/en/stable/usage/secrets_engines/kv_v2.html#read-secret-metadata
         # First LIST all secrets at secret engine "github/ackersonde"
-        r = client.secrets.kv.v2.list_secrets(mount_point, path="")
+        r = client.secrets.kv.v2.list_secrets(mount_point=mount_point, path="")
         secret_names = r["data"]["keys"]
 
         # Second: LOOP thru each secret get last timestamp
-        for path in secret_names:
-            r = client.secrets.kv.v2.read_secret_metadata(path, mount_point)
-            vault_secrets[path] = r["data"]["updated_time"]
+        for secret_name in secret_names:
+            r = client.secrets.kv.v2.read_secret_metadata(
+                mount_point=mount_point,
+                path=secret_name,
+            )
+            vault_secrets[secret_name] = r["data"]["updated_time"]
     except requests.exceptions.HTTPError as http_err:
         print(exception_method + f"HTTP error occurred: {http_err}")
     except Exception as err:
