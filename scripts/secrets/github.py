@@ -34,6 +34,16 @@ def get_updated_secrets_metadata():
         j = r.json()
         for secret in j["secrets"]:
             github_secrets[secret["name"]] = secret["updated_at"]
+
+        # hacky as hell, but I'll be cleaning this up as I migrate out
+        if j["total_count"] > 100:
+            secrets_url = secrets_url + "&page=2"
+            r = requests.get(secrets_url, headers=token_headers)
+            r.raise_for_status()
+
+            j = r.json()
+            for secret in j["secrets"]:
+                github_secrets[secret["name"]] = secret["updated_at"]
     except HTTPError as http_err:
         fatal(f"HTTP error occurred while fetching metadata: {http_err}")
     except Exception as err:
