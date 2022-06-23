@@ -74,7 +74,7 @@ jobs:
 
           scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$FS_CXN]:/tmp/
           ssh ubuntu@$FS_CXN '\
-            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ &&
+            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ && sudo chown root:root /etc/logrotate.d/logrotate_vault.conf &&
             mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
 
           scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
