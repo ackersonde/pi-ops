@@ -151,7 +151,6 @@ def update_github_secrets(vault_secrets, github_secrets, client):
 
     # update the secrets which are out of sync on github
     for secret_name in vault_secrets.keys():
-        slack_update = ""
         vault_updated_at = re.sub(r"\..*?Z", "", vault_secrets[secret_name]) + "+00:00"
         vault_update_time = datetime.fromisoformat(vault_updated_at)
 
@@ -168,7 +167,10 @@ def update_github_secrets(vault_secrets, github_secrets, client):
                         name=secret_name, base64=True, value=value, filepath=""
                     )
                     github.update_secret(token_headers, github_public_key, json_args)
-                    slack_update = f"Updated github secret *{secret_name}* (changed in Vault on {vault_update_time})."
+                    updates[
+                        secret_name
+                    ] = f"Updated github secret *{secret_name}* (changed in Vault on {vault_update_time})."
+
         else:
             secret = get_secret_value(client, secret_name)
             for secret_name, value in secret.items():
@@ -176,10 +178,9 @@ def update_github_secrets(vault_secrets, github_secrets, client):
                     name=secret_name, base64=True, value=value, filepath=""
                 )
                 github.update_secret(token_headers, github_public_key, json_args)
-                slack_update = f"Created *{secret_name}* @ github (added to Vault on {vault_update_time})."
-
-        if len(slack_update) > 0:
-            updates[secret_name] = slack_update
+                updates[
+                    secret_name
+                ] = f"Created *{secret_name}* @ github (added to Vault on {vault_update_time})."
 
     if len(updates) > 0:
         notify_slack(updates)
