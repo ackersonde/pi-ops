@@ -35,12 +35,12 @@ jobs:
           sed -i -e "s@{{FRITZ_BOX_USER}}@$FRITZ_BOX_USER@" scripts/fritzbox/fritzBoxShellConfig.sh
           sed -i -e "s@{{FRITZ_BOX_PASS}}@$FRITZ_BOX_PASS@" scripts/fritzbox/fritzBoxShellConfig.sh
 
-          export IPV6_BUILD_HOME=$(echo ${{ secrets.ORG_IPV6_BUILD_HOME }} | base64 -d)
-          export IPV6_MASTER_HOME=$(echo ${{ secrets.ORG_IPV6_MASTER_HOME }} | base64 -d)
-          export IPV6_SLAVE_HOME=$(echo ${{ secrets.ORG_IPV6_SLAVE_HOME }} | base64 -d)
-          sed -i -e "s/{{IPV6_BUILD_HOME}}/$IPV6_BUILD_HOME/" scripts/fritzbox/update_domain_records.sh
-          sed -i -e "s/{{IPV6_MASTER_HOME}}/$IPV6_MASTER_HOME/" scripts/fritzbox/update_domain_records.sh
-          sed -i -e "s/{{IPV6_SLAVE_HOME}}/$IPV6_SLAVE_HOME/" scripts/fritzbox/update_domain_records.sh
+          export BUILD_HOST=$(echo ${{ secrets.ORG_BUILD_HOST }} | base64 -d)
+          export MASTER_HOST=$(echo ${{ secrets.ORG_MASTER_HOST }} | base64 -d)
+          export SLAVE_HOST=$(echo ${{ secrets.ORG_SLAVE_HOST }} | base64 -d)
+          sed -i -e "s/{{BUILD_HOST}}/$BUILD_HOST/" scripts/fritzbox/update_domain_records.sh
+          sed -i -e "s/{{MASTER_HOST}}/$MASTER_HOST/" scripts/fritzbox/update_domain_records.sh
+          sed -i -e "s/{{SLAVE_HOST}}/$SLAVE_HOST/" scripts/fritzbox/update_domain_records.sh
 
           export CACERT_KEY_PASS=$(echo ${{ secrets.ORG_CACERT_KEY_PASS }} | base64 -d)
           export GITHUB_APP_CLIENT_ID=$(echo ${{ secrets.ORG_GITHUB_APP_CLIENT_ID }} | base64 -d)
@@ -72,6 +72,8 @@ jobs:
           echo "${{ secrets.ORG_CA_KEY }}" | base64 -d > scripts/ca_key
           chmod 600 scripts/ca_key
 
+          export IPV6_MASTER_HOME=$(echo ${{ secrets.ORG_IPV6_MASTER_HOME }} | base64 -d)
+          export IPV6_SLAVE_HOME=$(echo ${{ secrets.ORG_IPV6_SLAVE_HOME }} | base64 -d)
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$IPV6_MASTER_HOME]:/tmp/
