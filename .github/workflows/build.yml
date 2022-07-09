@@ -8,11 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-20.04
     env:
-      SSH_CXN: ${{ secrets.CTX_IPV6_MASTER_HOME }}
-      FS_CXN: ${{ secrets.CTX_IPV6_SLAVE_HOME }}
       LOG_FILES: "/var/log/update_domain_records.log /var/log/unseal_vault.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/photoprism-backup.log /var/log/photoprism-import.log /var/log/update_github_secrets.log"
-      CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
-      CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -20,30 +16,43 @@ jobs:
           go-version: '1.18'
       - name: Build and deploy application
         run: |
+          export CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN=$(echo ${{ secrets.ORG_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} | base64 -d)
+          export CTX_DIGITALOCEAN_FIREWALL=$(echo ${{ secrets.ORG_DIGITALOCEAN_FIREWALL }} | base64 -d)
+
           git clone https://github.com/ackersonde/digitaloceans.git
           cd digitaloceans
           go mod tidy
           go build do.go
           cd ../
 
-          sed -i -e "s@{{CTX_ROUTER_USER}}@${{ secrets.CTX_FRITZ_BOX_USER }}@" scripts/fritzbox/fritz-cert-upload.sh
-          sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_FRITZ_BOX_PASS }}@" scripts/fritzbox/fritz-cert-upload.sh
+          export FRITZ_BOX_USER=$(echo ${{ secrets.ORG_FRITZ_BOX_USER }} | base64 -d)
+          export FRITZ_BOX_PASS=$(echo ${{ secrets.ORG_FRITZ_BOX_PASS }} | base64 -d)
+          export FRITZ_BOX_HOST=$(echo ${{ secrets.ORG_FRITZ_BOX_HOST }} | base64 -d)
+          sed -i -e "s@{{FRITZ_BOX_USER}}@$FRITZ_BOX_USER@" scripts/fritzbox/fritz-cert-upload.sh
+          sed -i -e "s@{{FRITZ_BOX_PASS}}@$FRITZ_BOX_PASS@" scripts/fritzbox/fritz-cert-upload.sh
 
-          sed -i -e "s@{{CTX_FRITZ_BOX_HOST}}@${{ secrets.CTX_FRITZ_BOX_HOST }}@" scripts/fritzbox/fritzBoxShellConfig.sh
-          sed -i -e "s@{{CTX_FRITZ_BOX_USER}}@${{ secrets.CTX_FRITZ_BOX_USER }}@" scripts/fritzbox/fritzBoxShellConfig.sh
-          sed -i -e "s@{{CTX_FRITZ_BOX_PASS}}@${{ secrets.CTX_FRITZ_BOX_PASS }}@" scripts/fritzbox/fritzBoxShellConfig.sh
+          sed -i -e "s@{{FRITZ_BOX_HOST}}@$FRITZ_BOX_HOST@" scripts/fritzbox/fritzBoxShellConfig.sh
+          sed -i -e "s@{{FRITZ_BOX_USER}}@$FRITZ_BOX_USER@" scripts/fritzbox/fritzBoxShellConfig.sh
+          sed -i -e "s@{{FRITZ_BOX_PASS}}@$FRITZ_BOX_PASS@" scripts/fritzbox/fritzBoxShellConfig.sh
 
-          sed -i -e "s/{{CTX_IPV6_MASTER_HOME}}/${{ secrets.CTX_IPV6_MASTER_HOME }}/" scripts/fritzbox/update_domain_records.sh
-          sed -i -e "s/{{CTX_IPV6_BUILD_HOME}}/${{ secrets.CTX_IPV6_BUILD_HOME }}/" scripts/fritzbox/update_domain_records.sh
-          sed -i -e "s/{{CTX_IPV6_SLAVE_HOME}}/${{ secrets.CTX_IPV6_SLAVE_HOME }}/" scripts/fritzbox/update_domain_records.sh
+          export IPV6_MASTER_HOME=$(echo {{ secrets.ORG_IPV6_MASTER_HOME }} | base64 -d)
+          export IPV6_SLAVE_HOME=$(echo {{ secrets.ORG_IPV6_SLAVE_HOME }} | base64 -d)
+          export IPV6_BUILD_HOME=$(echo {{ secrets.ORG_IPV6_BUILD_HOME }} | base64 -d)
+          sed -i -e "s/{{IPV6_MASTER_HOME}}/$IPV6_MASTER_HOME/" scripts/fritzbox/update_domain_records.sh
+          sed -i -e "s/{{IPV6_BUILD_HOME}}/$IPV6_BUILD_HOME/" scripts/fritzbox/update_domain_records.sh
+          sed -i -e "s/{{IPV6_SLAVE_HOME}}/$IPV6_SLAVE_HOME/" scripts/fritzbox/update_domain_records.sh
 
-          export GITHUB_INSTALL_ID=$(echo ${{ secrets.CTX_GITHUB_INSTALL_ID }} | base64 -d)
-          sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@${{ secrets.CTX_GITHUB_APP_CLIENT_ID }}@" scripts/github_deploy_params
+          export CACERT_KEY_PASS=$(echo ${{ secrets.ORG_CACERT_KEY_PASS }} | base64 -d)
+          export GITHUB_APP_CLIENT_ID=$(echo ${{ secrets.ORG_GITHUB_APP_CLIENT_ID }} | base64 -d)
+          export GITHUB_INSTALL_ID=$(echo ${{ secrets.ORG_GITHUB_INSTALL_ID }} | base64 -d)
+          export GIT_APP_SECRETS_PK_PEM_FILE=$(echo ${{ secrets.ORG_GIT_APP_SECRETS_PK_PEM_FILE }} | base64 -d)
+          export SLACK_NOTIFICATIONS_TOKEN=$(echo ${{ secrets.ORG_SLACK_NOTIFICATIONS_TOKEN }} | base64 -d)
+          sed -i -e "s@{{CACERT_KEY_PASS}}@$CACERT_KEY_PASS@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@$GITHUB_APP_CLIENT_ID@" scripts/github_deploy_params
           sed -i -e "s@{{GIT_INSTALL_ID}}@$GITHUB_INSTALL_ID@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}@" scripts/github_deploy_params
-          sed -i -e "s@{{CTX_SLACK_NOTIFICATIONS_TOKEN}}@${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }}@" scripts/github_deploy_params
-          sed -i -e "s@{{DO_TOKEN}}@${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}@" scripts/github_deploy_params
+          sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@$GIT_APP_SECRETS_PK_PEM_FILE@" scripts/github_deploy_params
+          sed -i -e "s@{{SLACK_NOTIFICATIONS_TOKEN}}@$SLACK_NOTIFICATIONS_TOKEN@" scripts/github_deploy_params
+          sed -i -e "s@{{DO_TOKEN}}@$CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN@" scripts/github_deploy_params
           chmod 600 scripts/github_deploy_params
 
           export ORG_VAULT_API_ENDPOINT_D64=$(echo ${{ secrets.ORG_VAULT_API_ENDPOINT }} | base64 -d)
@@ -58,36 +67,36 @@ jobs:
           sed -i -e "s@{{ORG_VAULT_WRITE_SECRET_ID}}@$ORG_VAULT_WRITE_SECRET_ID_D64@" scripts/vault_update_github_params
           chmod 600 scripts/vault_update_github_params
 
-          echo "${{ secrets.CTX_GITHUB_SECRETS_PK_PEM }}" > scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
-          chmod 600 scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
-          echo "${{ secrets.CA_KEY }}" > scripts/ca_key
+          echo "${{ secrets.ORG_GITHUB_SECRETS_PK_PEM }}" | base64 -d > scripts/$GIT_APP_SECRETS_PK_PEM_FILE
+          chmod 600 scripts/$GIT_APP_SECRETS_PK_PEM_FILE
+          echo "${{ secrets.ORG_CA_KEY }} | base64 -d " > scripts/ca_key
           chmod 600 scripts/ca_key
+
+          scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$IPV6_SLAVE_HOME]:/tmp/
+          ssh ubuntu@$IPV6_SLAVE_HOME '\
+            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ && sudo chown root:root /etc/logrotate.d/logrotate_vault.conf &&
+            mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
 
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
-          scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$SSH_CXN]:/tmp/
+          scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$IPV6_MASTER_HOME]:/tmp/
           ssh ubuntu@$SSH_CXN '\
             crontab /tmp/crontab.txt && \
             sudo apt-get install wakeonlan nmap && \
             mkdir my-ca vault || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
-          scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$FS_CXN]:/tmp/
-          ssh ubuntu@$FS_CXN '\
-            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ && sudo chown root:root /etc/logrotate.d/logrotate_vault.conf &&
-            mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
-
-          scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$SSH_CXN]:~/traefik/
-          scp scripts/fritzbox/fritzBoxShell* scripts/fritzbox/update_domain_records.sh ubuntu@[$SSH_CXN]:~/
-          scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/ca_key ubuntu@[$SSH_CXN]:~/my-ca/
-          scp scripts/github_deploy_params scripts/vault_update_github_params ubuntu@[$SSH_CXN]:~/.ssh/
-          scp scripts/secrets/*.sh ubuntu@[$SSH_CXN]:~/vault/
+          scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$IPV6_MASTER_HOME]:~/traefik/
+          scp scripts/fritzbox/fritzBoxShell* scripts/fritzbox/update_domain_records.sh ubuntu@[$IPV6_MASTER_HOME]:~/
+          scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/$GIT_APP_SECRETS_PK_PEM_FILE scripts/ca_key ubuntu@[$IPV6_MASTER_HOME]:~/my-ca/
+          scp scripts/github_deploy_params scripts/vault_update_github_params ubuntu@[$IPV6_MASTER_HOME]:~/.ssh/
+          scp scripts/secrets/*.sh ubuntu@[$IPV6_MASTER_HOME]:~/vault/
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 
           mkdir ~/.ssh
           cat <<EOF >~/.ssh/id_rsa
-          ${{ secrets.CTX_DIGITALOCEAN_SSH_PRIVKEY }}
+          $(echo ${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }} | base64 -d)
           EOF
           chmod 400 ~/.ssh/id_rsa
 
@@ -101,6 +110,6 @@ jobs:
           rm -Rf .ssh/ scripts/ deploy-pi-ops.sh
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
-          curl -s -o /dev/null -X POST -d "token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }}" -d "channel=C092UE0H4" \
+          curl -s -o /dev/null -X POST -d "token=$SLACK_NOTIFICATIONS_TOKEN" -d "channel=C092UE0H4" \
             -d "text=<https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|$GITHUB_REPOSITORY @ $GITHUB_RUN_ID>" \
             https://slack.com/api/chat.postMessage

@@ -5,9 +5,9 @@
 #******************************************************#
 
 # Fritz!Box Config
-[[ -z "$BoxIP" ]] && BoxIP="{{CTX_FRITZ_BOX_HOST}}"
-[[ -z "$BoxUSER" ]] && BoxUSER="{{CTX_FRITZ_BOX_USER}}"
-[[ -z "$BoxPW" ]] && BoxPW="{{CTX_FRITZ_BOX_PASS}}"
+[[ -z "$BoxIP" ]] && BoxIP="{{FRITZ_BOX_HOST}}"
+[[ -z "$BoxUSER" ]] && BoxUSER="{{FRITZ_BOX_USER}}"
+[[ -z "$BoxPW" ]] && BoxPW="{{FRITZ_BOX_PASS}}"
 
 # Fritz!Repeater Config
 [[ -z "$RepeaterIP" ]] && RepeaterIP="fritz.repeater"

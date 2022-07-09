@@ -4,10 +4,12 @@ source ~/.ssh/github_deploy_params
 DOMAIN=ackerson.de
 PREFIX=`./fritzBoxShell.sh IGDIP STATE | grep NewIPv6Prefix | awk '{print $2}'`
 
+sudo service systemd-resolved restart
+
 declare -A domains
-domains["145482150"]="ubuntu@{{CTX_IPV6_MASTER_HOME}}"
-domains["145483151"]="ubuntu@{{CTX_IPV6_SLAVE_HOME}}"
-domains["145482932"]="ackersond@{{CTX_IPV6_BUILD_HOME}}"
+domains["145482150"]="ubuntu@{{IPV6_MASTER_HOME}}"
+domains["145483151"]="ubuntu@{{IPV6_SLAVE_HOME}}"
+domains["145482932"]="ackersond@{{IPV6_BUILD_HOME}}"
 
 for IPV6_RECORD_ID in "${!domains[@]}"
 do

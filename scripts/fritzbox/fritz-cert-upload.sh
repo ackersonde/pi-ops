@@ -3,8 +3,8 @@
 ## put it in /etc/letsencrypt/renewal-hooks/post so it gets run after every renewal.
 
 # parameters
-USERNAME="{{CTX_ROUTER_USER}}"
-PASSWORD="{{CTX_ROUTER_PASSWD}}"
+USERNAME="{{FRITZ_BOX_USER}}"
+PASSWORD="{{FRITZ_BOX_PASS}}"
 CERTPATH="/home/ubuntu/traefik/dump"
 HOST=https://fritz.ackerson.de
 WGET="wget" # add `--no-check-certificate` if/when you've missed the expiration

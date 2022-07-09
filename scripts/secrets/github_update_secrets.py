@@ -6,7 +6,7 @@ import os
 import requests
 
 import github
-import vault_update_secrets
+import vault
 
 SSH_CERT_FILE = os.environ["SSH_CERT_FILE"]
 SSH_PRIV_KEY = os.environ["SSH_PRIV_KEY"]
@@ -23,6 +23,9 @@ def redeploy_digitalocean(token_headers: str):
     resp.raise_for_status()
 
 
+# TODO: NOTE: when Github secrets are deprecated and no longer used, feel free
+# to move the vault.update_secret() calls & redeploy_DO() into vault_update_secrets.py
+# and delete this script completely!
 def main():
     # https://docs.github.com/en/free-pro-team@latest/rest/reference/actions#secrets
     try:
@@ -33,25 +36,25 @@ def main():
             name="CTX_SERVER_DEPLOY_SECRET_B64", base64=True, filepath=SSH_PRIV_KEY
         )
         github.update_secret(token_headers, github_public_key, ssh_priv_key_args)
-        vault_update_secrets.update_secret(ssh_priv_key_args)
+        vault.update_secret(ssh_priv_key_args)
 
         ssh_cert_file_args = SimpleNamespace(
             name="CTX_SERVER_DEPLOY_CACERT_B64", base64=True, filepath=SSH_CERT_FILE
         )
         github.update_secret(token_headers, github_public_key, ssh_cert_file_args)
-        vault_update_secrets.update_secret(ssh_cert_file_args)
+        vault.update_secret(ssh_cert_file_args)
 
         ssh_pub_key_args = SimpleNamespace(
             name="CTX_SERVER_DEPLOY_PUBLIC_B64", base64=True, filepath=SSH_PUB_KEY
         )
         github.update_secret(token_headers, github_public_key, ssh_pub_key_args)
-        vault_update_secrets.update_secret(ssh_pub_key_args)
+        vault.update_secret(ssh_pub_key_args)
 
         acme_json_args = SimpleNamespace(
             name="CTX_ACME_JSON", base64=False, filepath=ACME_JSON
         )
         github.update_secret(token_headers, github_public_key, acme_json_args)
-        vault_update_secrets.update_secret(acme_json_args)
+        vault.update_secret(acme_json_args)
 
         redeploy_digitalocean(token_headers)
     except HTTPError as http_err:
