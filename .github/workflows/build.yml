@@ -35,9 +35,9 @@ jobs:
           sed -i -e "s@{{FRITZ_BOX_USER}}@$FRITZ_BOX_USER@" scripts/fritzbox/fritzBoxShellConfig.sh
           sed -i -e "s@{{FRITZ_BOX_PASS}}@$FRITZ_BOX_PASS@" scripts/fritzbox/fritzBoxShellConfig.sh
 
-          export IPV6_MASTER_HOME=$(echo {{ secrets.ORG_IPV6_MASTER_HOME }} | base64 -d)
-          export IPV6_SLAVE_HOME=$(echo {{ secrets.ORG_IPV6_SLAVE_HOME }} | base64 -d)
-          export IPV6_BUILD_HOME=$(echo {{ secrets.ORG_IPV6_BUILD_HOME }} | base64 -d)
+          export IPV6_MASTER_HOME=$(echo ${{ secrets.ORG_IPV6_MASTER_HOME }} | base64 -d)
+          export IPV6_SLAVE_HOME=$(echo ${{ secrets.ORG_IPV6_SLAVE_HOME }} | base64 -d)
+          export IPV6_BUILD_HOME=$(echo ${{ secrets.ORG_IPV6_BUILD_HOME }} | base64 -d)
           sed -i -e "s/{{IPV6_MASTER_HOME}}/$IPV6_MASTER_HOME/" scripts/fritzbox/update_domain_records.sh
           sed -i -e "s/{{IPV6_BUILD_HOME}}/$IPV6_BUILD_HOME/" scripts/fritzbox/update_domain_records.sh
           sed -i -e "s/{{IPV6_SLAVE_HOME}}/$IPV6_SLAVE_HOME/" scripts/fritzbox/update_domain_records.sh
@@ -45,12 +45,12 @@ jobs:
           export CACERT_KEY_PASS=$(echo ${{ secrets.ORG_CACERT_KEY_PASS }} | base64 -d)
           export GITHUB_APP_CLIENT_ID=$(echo ${{ secrets.ORG_GITHUB_APP_CLIENT_ID }} | base64 -d)
           export GITHUB_INSTALL_ID=$(echo ${{ secrets.ORG_GITHUB_INSTALL_ID }} | base64 -d)
-          export GIT_APP_SECRETS_PK_PEM_FILE=$(echo ${{ secrets.ORG_GIT_APP_SECRETS_PK_PEM_FILE }} | base64 -d)
+          export GITHUB_SECRETS_PK_PEM_FILE=$(echo ${{ secrets.ORG_GITHUB_SECRETS_PK_PEM_FILE }} | base64 -d)
           export SLACK_NOTIFICATIONS_TOKEN=$(echo ${{ secrets.ORG_SLACK_NOTIFICATIONS_TOKEN }} | base64 -d)
           sed -i -e "s@{{CACERT_KEY_PASS}}@$CACERT_KEY_PASS@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_APP_CLIENT_ID}}@$GITHUB_APP_CLIENT_ID@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_INSTALL_ID}}@$GITHUB_INSTALL_ID@" scripts/github_deploy_params
-          sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@$GIT_APP_SECRETS_PK_PEM_FILE@" scripts/github_deploy_params
+          sed -i -e "s@{{GITHUB_APP_CLIENT_ID}}@$GITHUB_APP_CLIENT_ID@" scripts/github_deploy_params
+          sed -i -e "s@{{GITHUB_INSTALL_ID}}@$GITHUB_INSTALL_ID@" scripts/github_deploy_params
+          sed -i -e "s@{{GITHUB_SECRETS_PK_PEM_FILE}}@$GITHUB_SECRETS_PK_PEM_FILE@" scripts/github_deploy_params
           sed -i -e "s@{{SLACK_NOTIFICATIONS_TOKEN}}@$SLACK_NOTIFICATIONS_TOKEN@" scripts/github_deploy_params
           sed -i -e "s@{{DO_TOKEN}}@$CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN@" scripts/github_deploy_params
           chmod 600 scripts/github_deploy_params
@@ -67,8 +67,8 @@ jobs:
           sed -i -e "s@{{ORG_VAULT_WRITE_SECRET_ID}}@$ORG_VAULT_WRITE_SECRET_ID_D64@" scripts/vault_update_github_params
           chmod 600 scripts/vault_update_github_params
 
-          echo "${{ secrets.ORG_GITHUB_SECRETS_PK_PEM }}" | base64 -d > scripts/$GIT_APP_SECRETS_PK_PEM_FILE
-          chmod 600 scripts/$GIT_APP_SECRETS_PK_PEM_FILE
+          echo "${{ secrets.ORG_GITHUB_SECRETS_PK_PEM }}" | base64 -d > scripts/$GITHUB_SECRETS_PK_PEM_FILE
+          chmod 600 scripts/$GITHUB_SECRETS_PK_PEM_FILE
           echo "${{ secrets.ORG_CA_KEY }}" | base64 -d > scripts/ca_key
           chmod 600 scripts/ca_key
 
@@ -88,7 +88,7 @@ jobs:
 
           scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$IPV6_MASTER_HOME]:~/traefik/
           scp scripts/fritzbox/fritzBoxShell* scripts/fritzbox/update_domain_records.sh ubuntu@[$IPV6_MASTER_HOME]:~/
-          scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/$GIT_APP_SECRETS_PK_PEM_FILE scripts/ca_key ubuntu@[$IPV6_MASTER_HOME]:~/my-ca/
+          scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/$GITHUB_SECRETS_PK_PEM_FILE scripts/ca_key ubuntu@[$IPV6_MASTER_HOME]:~/my-ca/
           scp scripts/github_deploy_params scripts/vault_update_github_params ubuntu@[$IPV6_MASTER_HOME]:~/.ssh/
           scp scripts/secrets/*.sh ubuntu@[$IPV6_MASTER_HOME]:~/vault/
           DEPLOY_EOF
