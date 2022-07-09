@@ -72,11 +72,6 @@ jobs:
           echo "${{ secrets.ORG_CA_KEY }}" | base64 -d > scripts/ca_key
           chmod 600 scripts/ca_key
 
-          scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$IPV6_SLAVE_HOME]:/tmp/
-          ssh ubuntu@$IPV6_SLAVE_HOME '\
-            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ && sudo chown root:root /etc/logrotate.d/logrotate_vault.conf &&
-            mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
-
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$IPV6_MASTER_HOME]:/tmp/
@@ -91,6 +86,11 @@ jobs:
           scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/$GITHUB_SECRETS_PK_PEM_FILE scripts/ca_key ubuntu@[$IPV6_MASTER_HOME]:~/my-ca/
           scp scripts/github_deploy_params scripts/vault_update_github_params ubuntu@[$IPV6_MASTER_HOME]:~/.ssh/
           scp scripts/secrets/*.sh ubuntu@[$IPV6_MASTER_HOME]:~/vault/
+
+          scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$IPV6_SLAVE_HOME]:/tmp/
+          ssh ubuntu@$IPV6_SLAVE_HOME '\
+            sudo mv /tmp/logrotate_vault.conf /etc/logrotate.d/ && sudo chown root:root /etc/logrotate.d/logrotate_vault.conf &&
+            mkdir -p /mnt/usb4TB/backups/vault-secrets || true'
           DEPLOY_EOF
           chmod u+x deploy-pi-ops.sh
 
