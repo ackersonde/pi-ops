@@ -69,7 +69,7 @@ jobs:
 
           echo "${{ secrets.ORG_GITHUB_SECRETS_PK_PEM }}" | base64 -d > scripts/$GIT_APP_SECRETS_PK_PEM_FILE
           chmod 600 scripts/$GIT_APP_SECRETS_PK_PEM_FILE
-          echo "${{ secrets.ORG_CA_KEY }} | base64 -d " > scripts/ca_key
+          echo "${{ secrets.ORG_CA_KEY }}" | base64 -d > scripts/ca_key
           chmod 600 scripts/ca_key
 
           scp -o StrictHostKeyChecking=no scripts/secrets/logrotate_vault.conf ubuntu@[$IPV6_SLAVE_HOME]:/tmp/
