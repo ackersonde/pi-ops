@@ -19,7 +19,8 @@ fi
 # shutdown and backup Vault offsite
 ./vault/backup_restore.sh backup
 
-rm -f $WORKING_DIR/id_ed25519_github_deploy*
+mkdir -p $WORKING_DIR/archive
+mv $WORKING_DIR/id_ed25519_github_deploy* $WORKING_DIR/archive/
 
 ssh-keygen -t ed25519 -a 100 -f $WORKING_DIR/id_ed25519_github_deploy -q -N ""
 ssh-keygen -s $WORKING_DIR/ca_key -I github -n ubuntu,ackersond -P "$CACERT_KEY_PASS" -V +10d -z $(date +%s) $WORKING_DIR/id_ed25519_github_deploy
@@ -34,5 +35,5 @@ if $WORKING_DIR/github_update_secrets.py ; then
         -d text="$HOSTNAME just updated the SSH deploy key & cert in Org Secrets:" $SLACK_URL
     curl -s -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 -d text="$CERT_INFO" $SLACK_URL
     source $GITHUB_DEPLOY_KEY_FILE
-    ssh-copy-id -i $SSH_PRIV_KEY -f vault
+    ssh-copy-id -i $SSH_PRIV_KEY -o 'IdentityFile $WORKING_DIR/archive/id_ed25519_github_deploy' vault
 fi

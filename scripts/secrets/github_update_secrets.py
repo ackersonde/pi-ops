@@ -33,25 +33,25 @@ def main():
         github_public_key = github.fetch_public_key(token_headers)
 
         ssh_priv_key_args = SimpleNamespace(
-            name="CTX_SERVER_DEPLOY_SECRET_B64", base64=True, filepath=SSH_PRIV_KEY
+            name="ORG_SERVER_DEPLOY_SECRET", base64=True, filepath=SSH_PRIV_KEY
         )
         github.update_secret(token_headers, github_public_key, ssh_priv_key_args)
         vault.update_secret(ssh_priv_key_args)
 
         ssh_cert_file_args = SimpleNamespace(
-            name="CTX_SERVER_DEPLOY_CACERT_B64", base64=True, filepath=SSH_CERT_FILE
+            name="ORG_SERVER_DEPLOY_CACERT", base64=True, filepath=SSH_CERT_FILE
         )
         github.update_secret(token_headers, github_public_key, ssh_cert_file_args)
         vault.update_secret(ssh_cert_file_args)
 
         ssh_pub_key_args = SimpleNamespace(
-            name="CTX_SERVER_DEPLOY_PUBLIC_B64", base64=True, filepath=SSH_PUB_KEY
+            name="ORG_SERVER_DEPLOY_PUBLIC", base64=True, filepath=SSH_PUB_KEY
         )
         github.update_secret(token_headers, github_public_key, ssh_pub_key_args)
         vault.update_secret(ssh_pub_key_args)
 
         acme_json_args = SimpleNamespace(
-            name="CTX_ACME_JSON", base64=False, filepath=ACME_JSON
+            name="ORG_ACME_JSON", base64=False, filepath=ACME_JSON
         )
         github.update_secret(token_headers, github_public_key, acme_json_args)
         vault.update_secret(acme_json_args)
