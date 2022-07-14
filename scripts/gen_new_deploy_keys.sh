@@ -35,5 +35,5 @@ if $WORKING_DIR/github_update_secrets.py ; then
         -d text="$HOSTNAME just updated the SSH deploy key & cert in Org Secrets:" $SLACK_URL
     curl -s -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 -d text="$CERT_INFO" $SLACK_URL
     source $GITHUB_DEPLOY_KEY_FILE
-    ssh-copy-id -i $SSH_PRIV_KEY -o 'IdentityFile $WORKING_DIR/archive/id_ed25519_github_deploy' vault
+    ssh-copy-id -i $SSH_PRIV_KEY -o "IdentityFile $WORKING_DIR/archive/id_ed25519_github_deploy" -f vault
 fi
