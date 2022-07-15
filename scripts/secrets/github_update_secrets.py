@@ -51,7 +51,7 @@ def main():
         vault.update_secret(ssh_pub_key_args)
 
         acme_json_args = SimpleNamespace(
-            name="ORG_ACME_JSON", base64=False, filepath=ACME_JSON
+            name="ORG_ACME_JSON", base64=True, filepath=ACME_JSON
         )
         github.update_secret(token_headers, github_public_key, acme_json_args)
         vault.update_secret(acme_json_args)
