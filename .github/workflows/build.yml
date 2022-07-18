@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       LOG_FILES: "/var/log/update_domain_records.log /var/log/unseal_vault.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/photoprism-backup.log /var/log/photoprism-import.log /var/log/update_github_secrets.log"
     steps:
@@ -97,9 +97,7 @@ jobs:
           chmod u+x deploy-pi-ops.sh
 
           mkdir ~/.ssh
-          cat <<EOF >~/.ssh/id_rsa
-          $(echo ${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }} | base64 -d)
-          EOF
+          echo "${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }}" | tee ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
