@@ -11,12 +11,15 @@ import vault
 SSH_CERT_FILE = os.environ["SSH_CERT_FILE"]
 SSH_PRIV_KEY = os.environ["SSH_PRIV_KEY"]
 SSH_PUB_KEY = os.environ["SSH_PUB_KEY"]
-ACME_JSON = "/home/ubuntu/traefik/acme.json"
+TLS_ACKDE_CRT = "/home/ubuntu/traefik/dump/certs/*.ackerson.de.crt"
+TLS_ACKDE_KEY = "/home/ubuntu/traefik/dump/private/*.ackerson.de.key"
+TLS_HAUSM_CRT = "/home/ubuntu/traefik/dump/certs/hausmeisterservice-planb.de.crt"
+TLS_HAUSM_KEY = "/home/ubuntu/traefik/dump/private/hausmeisterservice-planb.de.key"
 
 
-def redeploy_digitalocean(token_headers: str):
+def redeploy_hetzner(token_headers: str):
     resp = requests.post(
-        "https://api.github.com/repos/ackersonde/digitaloceans/actions/workflows/build.yml/dispatches",
+        "https://api.github.com/repos/ackersonde/heztner_home/actions/workflows/build.yml/dispatches",
         json={"ref": "main"},
         headers=token_headers,
     )
@@ -50,13 +53,31 @@ def main():
         github.update_secret(token_headers, github_public_key, ssh_pub_key_args)
         vault.update_secret(ssh_pub_key_args)
 
-        acme_json_args = SimpleNamespace(
-            name="ORG_ACME_JSON", base64=True, filepath=ACME_JSON
+        ackde_crt_args = SimpleNamespace(
+            name="ORG_TLS_ACKDE_CRT", base64=True, filepath=TLS_ACKDE_CRT
         )
-        github.update_secret(token_headers, github_public_key, acme_json_args)
-        vault.update_secret(acme_json_args)
+        github.update_secret(token_headers, github_public_key, ackde_crt_args)
+        vault.update_secret(ackde_crt_args)
 
-        redeploy_digitalocean(token_headers)
+        ackde_key_args = SimpleNamespace(
+            name="ORG_TLS_ACKDE_KEY", base64=True, filepath=TLS_ACKDE_KEY
+        )
+        github.update_secret(token_headers, github_public_key, ackde_key_args)
+        vault.update_secret(ackde_key_args)
+
+        hausm_crt_args = SimpleNamespace(
+            name="ORG_TLS_HAUSM_CRT", base64=True, filepath=TLS_HAUSM_CRT
+        )
+        github.update_secret(token_headers, github_public_key, hausm_crt_args)
+        vault.update_secret(hausm_crt_args)
+
+        hausm_key_args = SimpleNamespace(
+            name="ORG_TLS_HAUSM_KEY", base64=True, filepath=TLS_HAUSM_KEY
+        )
+        github.update_secret(token_headers, github_public_key, hausm_key_args)
+        vault.update_secret(hausm_key_args)
+
+        redeploy_hetzner(token_headers)
     except HTTPError as http_err:
         github.fatal(f"HTTP error occurred: {http_err}")
     except Exception as err:

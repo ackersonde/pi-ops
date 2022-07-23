@@ -19,10 +19,10 @@ jobs:
           export CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN=$(echo ${{ secrets.ORG_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} | base64 -d)
           export CTX_DIGITALOCEAN_FIREWALL=$(echo ${{ secrets.ORG_DIGITALOCEAN_FIREWALL }} | base64 -d)
 
-          git clone https://github.com/ackersonde/digitaloceans.git
-          cd digitaloceans
+          git clone https://github.com/ackersonde/hetzner_home.git
+          cd hetzner_home
           go mod tidy
-          go build do.go
+          go build hetzner.go
           cd ../
 
           export FRITZ_BOX_USER=$(echo ${{ secrets.ORG_FRITZ_BOX_USER }} | base64 -d)
@@ -97,18 +97,18 @@ jobs:
           chmod u+x deploy-pi-ops.sh
 
           mkdir ~/.ssh
-          echo "${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }}" | tee ~/.ssh/id_rsa
+          echo "${{ secrets.HETZNER_SSH_PRIVKEY }}" > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
-          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
+          ./hetzner_home/hetzner -fn=firewallSSH -tag=homepage -ip=$public_ip_address
 
           scp -o StrictHostKeyChecking=no -r scripts deploy-pi-ops.sh root@ackerson.de:~/
           ssh root@ackerson.de ./deploy-pi-ops.sh
           ssh root@ackerson.de rm -Rf scripts/ deploy-pi-ops.sh
 
           rm -Rf .ssh/ scripts/ deploy-pi-ops.sh
-          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
+          ./hetzner_home/hetzner -fn=cleanupDeploy -tag=homepage
 
           curl -s -o /dev/null -X POST -d "token=$SLACK_NOTIFICATIONS_TOKEN" -d "channel=C092UE0H4" \
             -d "text=<https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|$GITHUB_REPOSITORY @ $GITHUB_RUN_ID>" \
