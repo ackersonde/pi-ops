@@ -44,4 +44,4 @@ $WGET -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-data
 
 # clean up
 rm -f $TMP
-rm -Rf /home/ubuntu/traefik/dump/
+#rm -Rf /home/ubuntu/traefik/dump/
