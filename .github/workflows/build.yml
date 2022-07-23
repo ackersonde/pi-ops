@@ -98,7 +98,7 @@ jobs:
           chmod u+x deploy-pi-ops.sh
 
           mkdir ~/.ssh
-          echo "${{ secrets.HETZNER_SSH_PRIVKEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.HETZNER_SSH_PRIVKEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
