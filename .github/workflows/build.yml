@@ -78,7 +78,7 @@ jobs:
           cat <<DEPLOY_EOF >deploy-pi-ops.sh
           #!/usr/bin/bash
           scp -o StrictHostKeyChecking=no scripts/crontab.txt ubuntu@[$IPV6_MASTER_HOME]:/tmp/
-          ssh ubuntu@$SSH_CXN '\
+          ssh ubuntu@$IPV6_MASTER_HOME '\
             crontab /tmp/crontab.txt && \
             sudo apt-get install wakeonlan nmap && \
             mkdir my-ca vault || true && \
