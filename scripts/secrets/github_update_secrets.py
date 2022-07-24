@@ -11,10 +11,10 @@ import vault
 SSH_CERT_FILE = os.environ["SSH_CERT_FILE"]
 SSH_PRIV_KEY = os.environ["SSH_PRIV_KEY"]
 SSH_PUB_KEY = os.environ["SSH_PUB_KEY"]
-TLS_ACKDE_CRT = "/home/ubuntu/traefik/dump/certs/*.ackerson.de.crt"
-TLS_ACKDE_KEY = "/home/ubuntu/traefik/dump/private/*.ackerson.de.key"
-TLS_HAUSM_CRT = "/home/ubuntu/traefik/dump/certs/hausmeisterservice-planb.de.crt"
-TLS_HAUSM_KEY = "/home/ubuntu/traefik/dump/private/hausmeisterservice-planb.de.key"
+TLS_ACKDE_CRT = "/etc/letsencrypt/live/ackerson.de/fullchain.pem"
+TLS_ACKDE_KEY = "/etc/letsencrypt/live/ackerson.de/privkey.pem"
+TLS_HAUSM_CRT = "/etc/letsencrypt/live/hausmeisterservice-planb.de/fullchain.pem"
+TLS_HAUSM_KEY = "/etc/letsencrypt/live/hausmeisterservice-planb.de/privkey.pem"
 
 
 def redeploy_hetzner(token_headers: str):
