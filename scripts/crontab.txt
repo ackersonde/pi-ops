@@ -6,7 +6,7 @@
 23 23 * * * /home/ubuntu/photoprism/backup_photos.sh > /var/log/photoprism-backup.log 2>&1
 40 * * * * /home/ubuntu/photoprism/import_photos.sh > /var/log/photoprism-import.log 2>&1
 32 * * * * /home/ubuntu/my-ca/update_github_secrets.sh > /var/log/update_github_secrets.log 2>&1
-57 21 * * Fri /usr/bin/scp /etc/letsencrypt/live/ackerson.de/fullchain.pem vault:/root/traefik/certs/ackde.crt
-57 21 * * Fri /usr/bin/scp /etc/letsencrypt/live/ackerson.de/privkey.pem vault:/root/traefik/certs/ackde.key
-57 21 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/fullchain.pem vault:/root/traefik/keys/hausm.crt
-57 21 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/privkey.pem vault:/root/traefik/certs/hausm.key
+57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/ackerson.de/fullchain.pem vault:/root/traefik/certs/ackde.crt
+57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/ackerson.de/privkey.pem vault:/root/traefik/keys/ackde.key
+57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/fullchain.pem vault:/root/traefik/certs/hausm.crt
+57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/privkey.pem vault:/root/traefik/keys/hausm.key
