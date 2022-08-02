@@ -10,3 +10,5 @@
 57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/ackerson.de/privkey.pem vault:/root/traefik/keys/ackde.key
 57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/fullchain.pem vault:/root/traefik/certs/hausm.crt
 57 23 * * Fri /usr/bin/scp /etc/letsencrypt/live/hausmeisterservice-planb.de/privkey.pem vault:/root/traefik/keys/hausm.key
+# run on first Wed of every month
+00 12 1-7 * * [ "$(date '+\%u')" = "3" ] /home/ubuntu/my-ca/update_home_wg_psk.sh > /var/log/update_home_wg_psk.log 2>&1

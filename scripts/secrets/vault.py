@@ -6,6 +6,7 @@ import base64
 import hvac
 import os
 import requests
+import sys
 import traceback
 
 mount_point = "github/ackersonde"
@@ -134,3 +135,28 @@ def get_secret_value(client, secret_name):
         print(traceback.format_exc())
 
     return response
+
+
+# if called directly, create|update the indicated Vault secret w/ value or file contents
+def main(argv):
+    if len(argv) < 2:
+        print("Usage: vault.py <ORG_SECRET_NAME> <value|/file/path>")
+        exit(1)
+
+    secret_name = argv[0]
+    secret_value = argv[1]
+    secret = None
+    if secret_value.startswith("/"):
+        secret = SimpleNamespace(
+            name=secret_name, base64=False, filepath=secret_value, value=None
+        )
+    else:
+        secret = SimpleNamespace(
+            name=secret_name, base64=False, filepath=None, value=secret_value
+        )
+
+    update_secret(secret)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
