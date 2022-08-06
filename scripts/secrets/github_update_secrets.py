@@ -26,9 +26,6 @@ def redeploy_hetzner(token_headers: str):
     resp.raise_for_status()
 
 
-# TODO: NOTE: when Github secrets are deprecated and no longer used, feel free
-# to move the vault.update_secret() calls & redeploy_DO() into vault_update_secrets.py
-# and delete this script completely!
 def main():
     # https://docs.github.com/en/free-pro-team@latest/rest/reference/actions#secrets
     try:
