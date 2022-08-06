@@ -17,7 +17,7 @@ else
 fi
 
 # shutdown and backup Vault offsite
-./vault/backup_restore.sh backup
+/home/ubuntu/vault/backup_restore.sh backup
 
 mkdir -p $WORKING_DIR/archive
 mv $WORKING_DIR/id_ed25519_github_deploy* $WORKING_DIR/archive/

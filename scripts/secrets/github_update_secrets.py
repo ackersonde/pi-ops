@@ -19,7 +19,7 @@ TLS_HAUSM_KEY = "/etc/letsencrypt/live/hausmeisterservice-planb.de/privkey.pem"
 
 def redeploy_hetzner(token_headers: str):
     resp = requests.post(
-        "https://api.github.com/repos/ackersonde/heztner_home/actions/workflows/build.yml/dispatches",
+        "https://api.github.com/repos/ackersonde/hetzner_home/actions/workflows/build.yml/dispatches",
         json={"ref": "main"},
         headers=token_headers,
     )
