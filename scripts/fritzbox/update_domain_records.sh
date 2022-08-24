@@ -7,7 +7,6 @@ PREFIX=`./fritzBoxShell.sh IGDIP STATE | grep NewIPv6Prefix | awk '{print $2}'`
 sudo service systemd-resolved restart
 
 declare -A domains
-domains["145482932"]="ackersond@{{BUILD_HOST}}"
 domains["145482150"]="ubuntu@{{MASTER_HOST}}"
 domains["145483151"]="ubuntu@{{SLAVE_HOST}}"
 
