@@ -82,7 +82,7 @@ jobs:
             mkdir my-ca vault || true && \
             sudo touch -m $LOG_FILES && sudo chown ubuntu:ubuntu $LOG_FILES'
 
-          scp scripts/fritzbox/fritz-cert-upload.sh scripts/fritzbox/traefik-certs-dumper ubuntu@[$IPV6_MASTER_HOME]:~/traefik/
+          scp scripts/fritzbox/fritz-cert-upload.sh ubuntu@[$IPV6_MASTER_HOME]:/etc/letsencrypt/renewal-hooks/post/
           scp scripts/fritzbox/fritzBoxShell* scripts/fritzbox/update_domain_records.sh ubuntu@[$IPV6_MASTER_HOME]:~/
           scp scripts/*.sh scripts/secrets/*.py scripts/secrets/requirements.txt scripts/$GITHUB_SECRETS_PK_PEM_FILE scripts/ca_key ubuntu@[$IPV6_MASTER_HOME]:~/my-ca/
           scp scripts/github_deploy_params scripts/vault_update_github_params ubuntu@[$IPV6_MASTER_HOME]:~/.ssh/

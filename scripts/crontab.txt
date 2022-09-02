@@ -1,5 +1,4 @@
 # m h  dom mon dow   command
-05 19 28 * * /home/ubuntu/traefik/fritz-cert-upload.sh > /var/log/fritz-cert-upload.log 2>&1
 52 21 * * Fri /home/ubuntu/my-ca/gen_new_deploy_keys.sh > /var/log/gen_new_deploy_keys.log 2>&1
 */30 * * * * /home/ubuntu/vault/unseal_vault.sh > /var/log/unseal_vault.log 2>&1
 12 06 * * * /home/ubuntu/update_domain_records.sh > /var/log/update_domain_records.log 2>&1
