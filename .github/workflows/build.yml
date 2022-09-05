@@ -8,7 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     env:
-      LOG_FILES: "/var/log/update_domain_records.log /var/log/unseal_vault.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/photoprism-backup.log /var/log/photoprism-import.log /var/log/update_github_secrets.log"
+      LOG_FILES: "/var/log/update_domain_records.log /var/log/rotate_homepage_host_key.log /var/log/unseal_vault.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log /var/log/photoprism-backup.log /var/log/photoprism-import.log /var/log/update_github_secrets.log"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
